@@ -16,7 +16,7 @@ import {
 
 import { sequelize } from "./config/db.config.js";
 
-const PORT = process.env.PORT || 3000;
+const PORT =  3000;
 
 sequelize
   .sync()

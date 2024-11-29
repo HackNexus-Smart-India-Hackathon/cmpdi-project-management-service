@@ -15,6 +15,6 @@ const router = express.Router();
 // router.put("/:id", updateProject);
 // router.delete("/:id", deleteProject);
 
-router.post("/", createFundRequisition);
+
 
 export default router;
