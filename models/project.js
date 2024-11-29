@@ -1,5 +1,5 @@
 import { DataTypes } from "sequelize";
-import { sequelize } from "../config/db.config.js"; 
+import { sequelize } from "../config/db.config.js";
 
 const Project = sequelize.define(
   "Project",
@@ -43,7 +43,7 @@ const Project = sequelize.define(
       allowNull: false,
     },
     forms: {
-      type: DataTypes.JSON, // Stores as JSON in DB
+      type: DataTypes.JSON,
       allowNull: true,
     },
     description: {
@@ -51,7 +51,7 @@ const Project = sequelize.define(
       allowNull: true,
     },
     authorizedEmails: {
-      type: DataTypes.JSON, // Stores as JSON in DB
+      type: DataTypes.JSON, 
       allowNull: true,
     },
   },
