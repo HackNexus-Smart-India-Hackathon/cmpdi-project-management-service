@@ -14,45 +14,42 @@ const Project = sequelize.define(
       allowNull: false,
       unique: true,
     },
+    projectTitle: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
     fundingSource: {
       type: DataTypes.STRING,
       allowNull: false,
     },
-    projectTitle: {
-      type: DataTypes.STRING,
-      allowNull: false,
+    description: {
+      type: DataTypes.TEXT,
+      allowNull: true,
     },
     principalImplementingAgency: {
       type: DataTypes.STRING,
       allowNull: false,
     },
     subImplementingAgencies: {
-      type: DataTypes.JSON,
+      type: DataTypes.ARRAY(DataTypes.STRING),
       allowNull: true,
     },
-    duration: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-    },
-    projectOutlay: {
-      type: DataTypes.FLOAT,
+
+    startDate: {
+      type: DataTypes.DATE,
       allowNull: false,
     },
     scheduleCompletionDate: {
       type: DataTypes.DATE,
       allowNull: false,
     },
-    forms: {
+    projectOutlay: {
       type: DataTypes.JSON,
       allowNull: true,
     },
-    description: {
-      type: DataTypes.TEXT,
-      allowNull: true,
-    },
-    authorizedEmails: {
-      type: DataTypes.JSON, 
-      allowNull: true,
+    status: {
+      type: DataTypes.STRING,
+      allowNull: false,
     },
   },
   {

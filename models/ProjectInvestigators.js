@@ -10,21 +10,23 @@ const ProjectInvestigators = sequelize.define("ProjectInvestigators", {
     primaryKey: true,
   },
   projectId: {
+    // Renamed from "project" to "projectId"
     type: DataTypes.INTEGER,
     references: {
-      model: "Projects",
-      key: "id",
+      model: "Projects", // Ensure the table name matches the Project model
+      key: "id", // Foreign key referencing the Projects table
     },
   },
   userId: {
     type: DataTypes.INTEGER,
     references: {
-      model: "User",
-      key: "id",
+      model: "User", // Ensure the table name matches the User model
+      key: "id", // Foreign key referencing the User table
     },
   },
 });
 
+// Define the many-to-many relationship between Project and User
 User.belongsToMany(Project, { through: ProjectInvestigators });
 Project.belongsToMany(User, { through: ProjectInvestigators });
 
