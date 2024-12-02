@@ -1,4 +1,5 @@
-const generateProjectCode = async (fundingSource) => {
+import Project from "../models/project.js";
+export const generateProjectCode = async (fundingSource) => {
   const prefix = fundingSource === "S&T" ? "SNT" : "RND";
   const year = new Date().getFullYear();
   const lastProject = await Project.findOne({
