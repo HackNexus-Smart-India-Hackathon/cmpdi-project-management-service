@@ -12,7 +12,7 @@ const Project = sequelize.define(
     projectCode: {
       type: DataTypes.STRING,
       allowNull: false,
-      unique: true,
+      // unique: true,
     },
     projectTitle: {
       type: DataTypes.STRING,

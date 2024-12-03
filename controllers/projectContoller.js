@@ -61,7 +61,7 @@ export const createProject = async (req, res) => {
       );
 
       if (projectInvestigators && Array.isArray(projectInvestigators)) {
-        for (const { email } of projectInvestigators) {
+        for (const email of projectInvestigators) {
           if (!email) {
             throw new Error("Investigator email is required");
           }
