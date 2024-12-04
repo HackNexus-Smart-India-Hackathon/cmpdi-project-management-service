@@ -1,48 +1,50 @@
 import { DataTypes } from "sequelize";
 import { sequelize } from "../../config/db.config.js";
 
+// FinancialDetail model
 const FinancialDetail = sequelize.define("FinancialDetail", {
-  itemName: {
+  category: {
     type: DataTypes.STRING,
     allowNull: false,
   },
   totalApproved: {
     type: DataTypes.FLOAT,
-    allowNull: false,
+    allowNull: true,
     validate: {
       min: 0,
     },
   },
   sanctionedProvision: {
     type: DataTypes.FLOAT,
-    allowNull: false,
+    allowNull: true,
     validate: {
       min: 0,
     },
   },
-  incurredPreviousYear: {
+  previousYear: {
     type: DataTypes.FLOAT,
-    allowNull: false,
+    allowNull: true,
     validate: {
       min: 0,
     },
   },
-  incurredPreviousQuarter: {
+  previousQuarter: {
     type: DataTypes.FLOAT,
-    allowNull: false,
+    allowNull: true,
     validate: {
       min: 0,
     },
   },
   currentQuarter: {
     type: DataTypes.FLOAT,
-    allowNull: false,
+    allowNull: true,
     validate: {
       min: 0,
     },
   },
 });
 
+// QuarterlyExpenditureStatement model
 const QuarterlyExpenditureStatement = sequelize.define(
   "QuarterlyExpenditureStatement",
   {
@@ -98,6 +100,7 @@ const QuarterlyExpenditureStatement = sequelize.define(
   }
 );
 
+// Relationships
 QuarterlyExpenditureStatement.hasMany(FinancialDetail, {
   foreignKey: "statementId",
   as: "financialDetails",

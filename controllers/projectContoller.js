@@ -22,6 +22,7 @@ export const createProject = async (req, res) => {
       scheduleCompletionDate,
       projectOutlay,
       status,
+      adminId, // assuming adminId is passed in the request body
     } = req.body;
 
     if (
@@ -32,7 +33,8 @@ export const createProject = async (req, res) => {
       !startDate ||
       !scheduleCompletionDate ||
       !projectOutlay ||
-      !status
+      !status ||
+      !adminId // make sure adminId is provided
     ) {
       return res
         .status(400)
@@ -44,6 +46,16 @@ export const createProject = async (req, res) => {
     const transaction = await Project.sequelize.transaction();
 
     try {
+      const adminUser = await User.findByPk(adminId);
+      if (!adminUser) {
+        return res.status(404).json({
+          success: false,
+          message: "Admin user not found",
+        });
+      }
+
+      const adminEmail = adminUser.email;
+
       const project = await Project.create(
         {
           projectCode,
@@ -101,6 +113,7 @@ export const createProject = async (req, res) => {
         message: "Project created successfully",
         projectId: project.id,
         projectCode,
+        adminEmail,
       });
     } catch (error) {
       await transaction.rollback();
