@@ -22,7 +22,7 @@ export const createProject = async (req, res) => {
       scheduleCompletionDate,
       projectOutlay,
       status,
-      adminId, // assuming adminId is passed in the request body
+      adminId,
     } = req.body;
 
     if (
@@ -34,7 +34,7 @@ export const createProject = async (req, res) => {
       !scheduleCompletionDate ||
       !projectOutlay ||
       !status ||
-      !adminId // make sure adminId is provided
+      !adminId
     ) {
       return res
         .status(400)
@@ -68,10 +68,13 @@ export const createProject = async (req, res) => {
           scheduleCompletionDate,
           projectOutlay,
           status,
+          adminEmail,
+          projectInvestigatorsEmail: [],
         },
         { transaction }
       );
 
+      const investigatorEmails = [];
       if (projectInvestigators && Array.isArray(projectInvestigators)) {
         for (const email of projectInvestigators) {
           if (!email) {
@@ -103,8 +106,14 @@ export const createProject = async (req, res) => {
             },
             { transaction }
           );
+
+          investigatorEmails.push(email);
         }
       }
+
+      
+      project.projectInvestigatorsEmail = investigatorEmails;
+      await project.save({ transaction });
 
       await transaction.commit();
 
