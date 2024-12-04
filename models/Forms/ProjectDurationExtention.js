@@ -96,9 +96,18 @@ const ProjectDurationExtension = sequelize.define(
         min: 0,
       },
     },
+    // Additional fields for details, scope, or conclusions if needed
+    furtherStudiesNeeded: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
+    applicationScope: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
   },
   {
-    timestamps: true,
+    timestamps: true, // Automatically adds createdAt and updatedAt
   }
 );
 

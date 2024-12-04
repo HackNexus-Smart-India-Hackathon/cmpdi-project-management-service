@@ -33,24 +33,29 @@ const EquipmentDetail = sequelize.define(
       },
     },
     totalValue: {
+      // Optional if you plan to calculate it on the frontend
       type: DataTypes.FLOAT,
-      allowNull: false,
-      validate: {
-        min: 0,
-      },
+      allowNull: true, // Make it optional for frontend calculation
     },
     approvedCost: {
+      // Optional if you plan to calculate it on the frontend
       type: DataTypes.FLOAT,
-      allowNull: false,
-      validate: {
-        min: 0,
-      },
+      allowNull: true, // Make it optional for frontend calculation
     },
     progressiveExpenditure: {
       type: DataTypes.FLOAT,
       allowNull: false,
       validate: {
         min: 0,
+      },
+    },
+    statementId: {
+      // Foreign key linking to the statement
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: "QuarterlyExpenditureStatementOnCapitalEquipments", // name of the statement table
+        key: "id",
       },
     },
   },
@@ -89,17 +94,18 @@ const QuarterlyExpenditureStatementOnCapitalEquipment = sequelize.define(
     },
   },
   {
-    timestamps: true,
+    timestamps: true, // to store the time when a statement is created
   }
 );
 
 export { EquipmentDetail, QuarterlyExpenditureStatementOnCapitalEquipment };
 
+// Define associations
 QuarterlyExpenditureStatementOnCapitalEquipment.hasMany(EquipmentDetail, {
-  foreignKey: "statementId",
-  as: "equipmentDetails",
+  foreignKey: "statementId", // reference to statement
+  as: "equipmentDetails", // alias for easier referencing in the model
 });
 EquipmentDetail.belongsTo(QuarterlyExpenditureStatementOnCapitalEquipment, {
-  foreignKey: "statementId",
-  as: "statement",
+  foreignKey: "statementId", // reference to statement
+  as: "statement", // alias for easier referencing
 });
