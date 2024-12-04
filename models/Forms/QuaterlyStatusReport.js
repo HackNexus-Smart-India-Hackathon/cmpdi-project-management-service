@@ -25,26 +25,23 @@ const QuarterlyStatusReport = sequelize.define(
         notEmpty: true,
       },
     },
-    principalAgency: {
+    principalImplementingAgency: {
       type: DataTypes.STRING,
       allowNull: false,
       validate: {
         notEmpty: true,
       },
     },
-    subAgency: {
-      type: DataTypes.STRING,
+    subImplementingAgencies: {
+      type: DataTypes.JSON,
       allowNull: false,
-      validate: {
-        notEmpty: true,
-      },
+      defaultValue: [],
     },
-    projectCoordinator: {
-      type: DataTypes.STRING,
+
+    projectInvestigators: {
+      type: DataTypes.JSON,
       allowNull: false,
-      validate: {
-        notEmpty: true,
-      },
+      defaultValue: [],
     },
     startDate: {
       type: DataTypes.DATE,
