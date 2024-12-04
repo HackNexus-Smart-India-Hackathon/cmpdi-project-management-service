@@ -1,6 +1,7 @@
 import { DataTypes } from "sequelize";
 import { sequelize } from "../../config/db.config.js";
 
+// Define the model for RevisionCost
 const RevisionCost = sequelize.define(
   "RevisionCost",
   {
@@ -18,19 +19,20 @@ const RevisionCost = sequelize.define(
         notEmpty: true,
       },
     },
-    principalAgency: {
+    principalImplementingAgency: {
       type: DataTypes.STRING,
       allowNull: false,
       validate: {
         notEmpty: true,
       },
     },
-    projectLeader: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      validate: {
-        notEmpty: true,
-      },
+    subImplementingAgencies: {
+      type: DataTypes.ARRAY(DataTypes.STRING), // For storing multiple agencies
+      allowNull: true,
+    },
+    projectInvestigators: {
+      type: DataTypes.ARRAY(DataTypes.STRING), // For storing multiple investigators
+      allowNull: true,
     },
     startDate: {
       type: DataTypes.DATE,

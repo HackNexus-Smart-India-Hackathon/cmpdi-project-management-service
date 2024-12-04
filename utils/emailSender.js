@@ -6,7 +6,7 @@ export const sendInvitationEmail = async (email, projectTitle) => {
       service: "gmail",
       auth: {
         user: "cmpdisih@gmail.com",
-        pass: "cmpdisih123",
+        pass: "fmqpnyrrwnlwpukw",
       },
     });
 
