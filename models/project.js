@@ -34,10 +34,6 @@ const Project = sequelize.define(
       type: DataTypes.ARRAY(DataTypes.STRING),
       allowNull: true,
     },
-    admin: {
-      type: DataTypes.ARRAY(DataTypes.STRING),
-      allowNull: false,
-    },
     adminEmail: {
       type: DataTypes.STRING,
       allowNull: false,

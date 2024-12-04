@@ -1,6 +1,6 @@
 import Project from "../models/project.js";
 export const generateProjectCode = async (fundingSource) => {
-  const prefix = fundingSource === "S&T" ? "SNT" : "SNT1";
+  const prefix = fundingSource === "S&T" ? "SNT" : "SNT2";
   const year = new Date().getFullYear();
   const lastProject = await Project.findOne({
     where: { fundingSource },

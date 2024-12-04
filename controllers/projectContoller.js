@@ -46,7 +46,10 @@ export const createProject = async (req, res) => {
     const transaction = await Project.sequelize.transaction();
 
     try {
-      const adminUser = await User.findByPk(adminId);
+      const adminUser = await User.findOne(
+        { where: { id: adminId } },
+        { transaction }
+      );
       if (!adminUser) {
         return res.status(404).json({
           success: false,
@@ -55,7 +58,10 @@ export const createProject = async (req, res) => {
       }
 
       const adminEmail = adminUser.email;
-
+      console.log("adminEmail", adminEmail);
+      console.log("projectInvestigators", projectInvestigators);
+      
+      
       const project = await Project.create(
         {
           projectCode,
@@ -69,12 +75,13 @@ export const createProject = async (req, res) => {
           projectOutlay,
           status,
           adminEmail,
-          projectInvestigatorsEmail: [],
+          projectInvestigatorEmail: projectInvestigators,
         },
         { transaction }
       );
-
-      const investigatorEmails = [];
+      console.log("project", project);
+      
+      // const investigatorEmails = [];
       if (projectInvestigators && Array.isArray(projectInvestigators)) {
         for (const email of projectInvestigators) {
           if (!email) {
@@ -107,12 +114,12 @@ export const createProject = async (req, res) => {
             { transaction }
           );
 
-          investigatorEmails.push(email);
+          // investigatorEmails.push(email);
         }
       }
 
       
-      project.projectInvestigatorsEmail = investigatorEmails;
+      // project.projectInvestigatorsEmail = investigatorEmails;
       await project.save({ transaction });
 
       await transaction.commit();
