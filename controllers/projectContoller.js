@@ -8,6 +8,7 @@ import {
 } from "../utils/emailSender.js";
 import bcrypt from "bcrypt";
 import { v4 as uuidv4 } from "uuid";
+import { Op } from "sequelize";
 
 export const createProject = async (req, res) => {
   try {
@@ -60,8 +61,7 @@ export const createProject = async (req, res) => {
       const adminEmail = adminUser.email;
       console.log("adminEmail", adminEmail);
       console.log("projectInvestigators", projectInvestigators);
-      
-      
+
       const project = await Project.create(
         {
           projectCode,
@@ -80,8 +80,7 @@ export const createProject = async (req, res) => {
         { transaction }
       );
       console.log("project", project);
-      
-      // const investigatorEmails = [];
+
       if (projectInvestigators && Array.isArray(projectInvestigators)) {
         for (const email of projectInvestigators) {
           if (!email) {
@@ -113,13 +112,9 @@ export const createProject = async (req, res) => {
             },
             { transaction }
           );
-
-          // investigatorEmails.push(email);
         }
       }
 
-      
-      // project.projectInvestigatorsEmail = investigatorEmails;
       await project.save({ transaction });
 
       await transaction.commit();
@@ -141,6 +136,96 @@ export const createProject = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "An error occurred while creating the project",
+      details: error.message,
+    });
+  }
+};
+
+export const getProjectsByAdmin = async (req, res) => {
+  try {
+    const { adminId } = req.params;
+
+    if (!adminId) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Admin ID is required" });
+    }
+
+    const adminUser = await User.findByPk(adminId);
+    if (!adminUser) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Admin not found" });
+    }
+
+    const adminEmail = adminUser.email;
+
+    const projects = await Project.findAll({
+      where: {
+        adminEmail: adminEmail,
+      },
+    });
+
+    if (projects.length === 0) {
+      return res
+        .status(404)
+        .json({ success: false, message: "No projects found for this admin" });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Projects retrieved successfully",
+      projects: projects,
+    });
+  } catch (error) {
+    console.error("Error in getProjectsByAdmin:", error.message);
+    res.status(500).json({
+      success: false,
+      message: "An error occurred while retrieving projects",
+      details: error.message,
+    });
+  }
+};
+
+export const getInvestigatorsByProjectId = async (req, res) => {
+  try {
+    const { projectId } = req.params;
+
+    const project = await Project.findByPk(projectId);
+
+    if (!project) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Project not found" });
+    }
+
+    const investigatorEmails = project.projectInvestigatorEmail;
+
+    const investigators = await User.findAll({
+      where: {
+        email: {
+          [Op.in]: investigatorEmails,
+        },
+      },
+    });
+
+    if (investigators.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "No investigators found for this project",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Investigators retrieved successfully",
+      investigators,
+    });
+  } catch (error) {
+    console.error("Error in getInvestigatorsByProjectId:", error.message);
+    res.status(500).json({
+      success: false,
+      message: "An error occurred while retrieving investigators",
       details: error.message,
     });
   }
