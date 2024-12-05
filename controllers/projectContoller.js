@@ -14,8 +14,6 @@ import { Op } from "sequelize";
 export const createProject = async (req, res) => {
   try {
     const {
-      adminName , 
-      adminEmail,
       projectTitle,
       fundingSource,
       description,
@@ -29,8 +27,8 @@ export const createProject = async (req, res) => {
       adminId,
     } = req.body;
     if (
-      !adminName || 
-      !adminEmail||
+      !adminName ||
+      !adminEmail ||
       !fundingSource ||
       !projectTitle ||
       !principalImplementingAgency ||
@@ -49,9 +47,8 @@ export const createProject = async (req, res) => {
     const projectCode = await generateProjectCode(fundingSource);
 
     const transaction = await Project.sequelize.transaction();
-
-    axios.post('loclahost:8000/createUser' , )
-
+    let adminName = null;
+    let adminEmail1 = null;
     try {
       const adminUser = await User.findOne(
         { where: { id: adminId } },
@@ -63,6 +60,8 @@ export const createProject = async (req, res) => {
           message: "Admin user not found",
         });
       }
+      adminName = adminUser.username;
+      adminEmail1 = adminUser.email;
 
       const adminEmail = adminUser.email;
       console.log("adminEmail", adminEmail);
@@ -117,60 +116,61 @@ export const createProject = async (req, res) => {
               userId: user.id,
             },
             { transaction }
-          ); 
-          projectInvestigators.forEach(({email})=>{
-            axios.post('localhost:8000/createUser' , {
-              username,
-              email , 
-              role,
-              projectId : project.id
+          );
+          projectInvestigators.forEach(({ email }) => {
+            axios
+              .post("http://localhost:8000/createUser", {
+                username,
+                email,
+                role: "INVESTIGATOR",
+                projectId: String(project.id),
+              })
+              .then((created) => {
+                if (created == "User created successfully")
+                  console.log("Chat created");
+              })
+              .catch((error) => {
+                console.error(error);
+              });
+          });
+          axios
+            .post("http://localhost:8000/createUser", {
+              username: adminName,
+              email: adminEmail1,
+              role: "ADMIN",
+              projectId: String(project.id),
             })
-            .then((created)=>{
-              if(created == "User created successfully")
-                console.log("Chat created")
+            .then((created) => {
+              if (created == "User created successfully")
+                console.log("Chat created");
             })
-            .catch(error=>{
-              console.error(error)
-            })
-          })
-          axios.post('localhost:8000/createUser' , {
-            username : adminName,
-            email : adminEmail , 
-            role : "ADMIN",
-            projectId : project.id
-          })
-          .then((created)=>{
-            if(created == "User created successfully")
-              console.log("Chat created")
-          })
-          .catch(error=>{
-            console.error(error)
-          })
-        }   
-        for(let i = 0; i < projectInvestigators.length ; i++){
+            .catch((error) => {
+              console.error(error);
+            });
+        }
+        for (let i = 0; i < projectInvestigators.length; i++) {
           let investigator = ProjectInvestigators[i];
           for (let j = 0; j < array.length; j++) {
-            if(j != i){
-              axios.post('localhost:8000/privateChat' , {
-                username : investigator.username,
-                email : investigator.email,
-                role : investigator.role,
-                projectId : project.id,
-                to: investigator[j]
-
-              })
-              .then((created)=>{
-                if(created == "private chat established")
-                  console.log("Chat created")
-                console.log(created)
-              })
-              .catch((err)=>{
-                console.log(err)
-              })
+            if (j != i) {
+              axios
+                .post("localhost:8000/privateChat", {
+                  username: investigator.username,
+                  email: investigator.email,
+                  role: investigator.role,
+                  projectId: String(project.id),
+                  to: investigator[j],
+                })
+                .then((created) => {
+                  if (created == "private chat established")
+                    console.log("Chat created");
+                  console.log(created);
+                })
+                .catch((err) => {
+                  console.log(err);
+                });
             }
           }
         }
-        
       }
 
       await project.save({ transaction });
