@@ -14,45 +14,33 @@ import RevisionCost from "../models/Forms/RevisionofProjectCost.js";
 
 export const createFundRequisition = async (req, res) => {
   try {
+    const { projectTitle, projectCode, institutionName, yearPeriod, funds } =
+      req.body;
+
     const {
-      projectName,
-      projectCode,
-      companyName,
-      yearPeriod,
-      landBuilding,
-      capitalEquipment,
-      manpower,
-      consumables,
-      travel,
-      contingencies,
-      workshops,
-      totalApprovedCost,
-      totalFundReceived,
-      interestEarned,
-      expenditureIncurred,
-      balanceFund,
-      fundProvision,
-      fundRequired,
-    } = req.body;
+      LandBuilding,
+      CapitalEquipment,
+      Manpower,
+      Consumables,
+      Travel,
+      Contingencies,
+      WorkshopSeminar,
+    } = funds;
+
+    console.log(req.body);
 
     if (
-      !projectName ||
+      !projectTitle ||
       !projectCode ||
-      !companyName ||
+      !institutionName ||
       !yearPeriod ||
-      !landBuilding ||
-      !capitalEquipment ||
-      !manpower ||
-      !consumables ||
-      !travel ||
-      !contingencies ||
-      !workshops ||
-      !totalApprovedCost ||
-      !totalFundReceived ||
-      !expenditureIncurred ||
-      !balanceFund ||
-      !fundProvision ||
-      !fundRequired
+      !LandBuilding ||
+      !CapitalEquipment ||
+      !Manpower ||
+      !Consumables ||
+      !Travel ||
+      !Contingencies ||
+      !WorkshopSeminar
     ) {
       return res
         .status(400)
@@ -64,24 +52,19 @@ export const createFundRequisition = async (req, res) => {
     try {
       const fundRequisition = await FundRequisition.create(
         {
-          projectName,
+          projectTitle: projectTitle,
           projectCode,
-          companyName,
+          institutionName,
           yearPeriod,
-          landBuilding,
-          capitalEquipment,
-          manpower,
-          consumables,
-          travel,
-          contingencies,
-          workshops,
-          totalApprovedCost,
-          totalFundReceived,
-          interestEarned: interestEarned || 0,
-          expenditureIncurred,
-          balanceFund,
-          fundProvision,
-          fundRequired,
+          funds: {
+            LandBuilding: LandBuilding,
+            CapitalEquipment: CapitalEquipment,
+            Manpower: Manpower,
+            Consumables: Consumables,
+            Travel: Travel,
+            Contingencies: Contingencies,
+            WorkshopSeminar: WorkshopSeminar,
+          },
         },
         { transaction }
       );
@@ -132,26 +115,33 @@ export const createProjectCompletionReport = async (req, res) => {
       finalExpenditureStatement,
     } = req.body;
 
-    if (
-      !title ||
-      !projectCode ||
-      !commencementDate ||
-      !approvedCompletionDate ||
-      !actualCompletionDate ||
-      !objectives ||
-      !workProgram ||
-      !workDoneDetails ||
-      !objectivesFulfilled ||
-      !reasonsUncovered ||
-      !furtherStudiesNeeded ||
-      !conclusions ||
-      !applicationScope ||
-      !associatedPersons ||
-      !finalExpenditureStatement
-    ) {
+    const missingFields = [];
+    [
+      "title",
+      "projectCode",
+      "commencementDate",
+      "approvedCompletionDate",
+      "actualCompletionDate",
+      "objectives",
+      "workProgram",
+      "workDoneDetails",
+      "objectivesFulfilled",
+      "reasonsUncovered",
+      "furtherStudiesNeeded",
+      "conclusions",
+      "applicationScope",
+    ].forEach((field) => {
+      if (!req.body[field]?.trim()) missingFields.push(field);
+    });
+
+    if (missingFields.length > 0) {
       return res.status(400).json({
         success: false,
         message: "Missing required fields",
+        fieldErrors: missingFields.reduce((errors, field) => {
+          errors[field] = `${field} is required.`;
+          return errors;
+        }, {}),
       });
     }
 
@@ -173,8 +163,8 @@ export const createProjectCompletionReport = async (req, res) => {
           furtherStudiesNeeded,
           conclusions,
           applicationScope,
-          associatedPersons,
-          finalExpenditureStatement,
+          associatedPersons: associatedPersons || null,
+          finalExpenditureStatement: finalExpenditureStatement || null,
         },
         { transaction }
       );
@@ -184,7 +174,7 @@ export const createProjectCompletionReport = async (req, res) => {
       return res.status(201).json({
         success: true,
         message: "Project Completion Report created successfully",
-        projectCompletionReportId: projectCompletionReport.id,
+        data: { id: projectCompletionReport.id },
       });
     } catch (error) {
       await transaction.rollback();
@@ -226,33 +216,36 @@ export const createProjectDurationExtension = async (req, res) => {
     } = req.body;
 
     // Validate required fields
-    if (
-      !projectName ||
-      !projectCode ||
-      !principalAgency ||
-      !projectLeader ||
-      !startDate ||
-      !completionDate ||
-      !approvedObjectives ||
-      !approvedWorkProgram ||
-      !workDoneDetails ||
-      !revisedSchedule ||
-      !timeExtension ||
-      !extensionReason ||
-      !totalCost ||
-      !actualExpenditure
-    ) {
+    const requiredFields = [
+      "projectName",
+      "projectCode",
+      "principalAgency",
+      "projectLeader",
+      "startDate",
+      "completionDate",
+      "approvedObjectives",
+      "approvedWorkProgram",
+      "workDoneDetails",
+      "revisedSchedule",
+      "timeExtension",
+      "extensionReason",
+      "totalCost",
+      "actualExpenditure",
+    ];
+
+    const missingFields = requiredFields.filter((field) => !req.body[field]);
+
+    if (missingFields.length > 0) {
       return res.status(400).json({
         success: false,
         message: "Missing required fields",
+        missingFields,
       });
     }
 
-    // Start transaction
     const transaction = await ProjectDurationExtension.sequelize.transaction();
 
     try {
-      // Create Project Duration Extension
       const projectDurationExtension = await ProjectDurationExtension.create(
         {
           projectName,
@@ -273,7 +266,6 @@ export const createProjectDurationExtension = async (req, res) => {
         { transaction }
       );
 
-      // Commit transaction
       await transaction.commit();
 
       return res.status(201).json({
@@ -282,7 +274,6 @@ export const createProjectDurationExtension = async (req, res) => {
         projectDurationExtensionId: projectDurationExtension.id,
       });
     } catch (error) {
-      // Rollback transaction on error
       await transaction.rollback();
       console.error("Error in createProjectDurationExtension:", error.message);
       return res.status(500).json({
@@ -319,6 +310,7 @@ export const createQuarterlyExpenditureStatement = async (req, res) => {
       await QuarterlyExpenditureStatement.sequelize.transaction();
 
     try {
+      // Create the QuarterlyExpenditureStatement
       const statement = await QuarterlyExpenditureStatement.create(
         {
           projectName,
@@ -332,11 +324,18 @@ export const createQuarterlyExpenditureStatement = async (req, res) => {
         { transaction }
       );
 
-      if (financialDetails && financialDetails.length > 0) {
+      // Create associated FinancialDetails if provided
+      if (Array.isArray(financialDetails) && financialDetails.length > 0) {
         const details = financialDetails.map((detail) => ({
-          ...detail,
+          category: detail.category,
+          totalApproved: detail.totalApproved || 0,
+          sanctionedProvision: detail.sanctionedProvision || 0,
+          previousYear: detail.previousYear || 0,
+          previousQuarter: detail.previousQuarter || 0,
+          currentQuarter: detail.currentQuarter || 0,
           statementId: statement.id,
         }));
+
         await FinancialDetail.bulkCreate(details, { transaction });
       }
 
@@ -348,11 +347,9 @@ export const createQuarterlyExpenditureStatement = async (req, res) => {
         statementId: statement.id,
       });
     } catch (error) {
+      // Rollback the transaction on error
       await transaction.rollback();
-      console.error(
-        "Error creating Quarterly Expenditure Statement:",
-        error.message
-      );
+      console.error("Error creating Quarterly Expenditure Statement:", error);
       return res.status(500).json({
         success: false,
         message:
@@ -361,7 +358,7 @@ export const createQuarterlyExpenditureStatement = async (req, res) => {
       });
     }
   } catch (error) {
-    console.error("Transaction error:", error.message);
+    console.error("Transaction error:", error);
     return res.status(500).json({
       success: false,
       message: "An internal server error occurred",
@@ -379,14 +376,31 @@ export const createQuarterlyExpenditureStatementOnCapitalEquipment = async (
     projectCode,
     companyName,
     quarterEnding,
-    equipmentDetails,
+    equipmentDetails, // Array of equipment details
   } = req.body;
+
+  // Basic validation
+  if (!projectName || !projectCode || !companyName || !quarterEnding) {
+    return res.status(400).json({
+      success: false,
+      message:
+        "Project Name, Project Code, Company Name, and Quarter Ending are required.",
+    });
+  }
+
+  if (!Array.isArray(equipmentDetails) || equipmentDetails.length === 0) {
+    return res.status(400).json({
+      success: false,
+      message: "At least one equipment detail is required.",
+    });
+  }
 
   try {
     const transaction =
       await QuarterlyExpenditureStatementOnCapitalEquipment.sequelize.transaction();
 
     try {
+      // Create the statement (Quarterly Expenditure)
       const statement =
         await QuarterlyExpenditureStatementOnCapitalEquipment.create(
           {
@@ -398,14 +412,22 @@ export const createQuarterlyExpenditureStatementOnCapitalEquipment = async (
           { transaction }
         );
 
-      if (equipmentDetails && equipmentDetails.length > 0) {
-        const details = equipmentDetails.map((detail) => ({
-          ...detail,
-          statementId: statement.id,
-        }));
-        await EquipmentDetail.bulkCreate(details, { transaction });
-      }
+      // Map the equipment details to include the statementId
+      const details = equipmentDetails.map((detail) => ({
+        equipmentName: detail.equipmentName,
+        supplierName: detail.supplierName,
+        units: detail.units,
+        unitValue: detail.unitValue,
+        totalValue: detail.totalValue, // Assume this is calculated on the frontend
+        approvedCost: detail.approvedCost, // Assume this is calculated on the frontend
+        progressiveExpenditure: detail.progressiveExpenditure,
+        statementId: statement.id, // Link to the statement
+      }));
 
+      // Insert the equipment details into the database
+      await EquipmentDetail.bulkCreate(details, { transaction });
+
+      // Commit the transaction
       await transaction.commit();
 
       return res.status(201).json({
@@ -415,6 +437,7 @@ export const createQuarterlyExpenditureStatementOnCapitalEquipment = async (
         statementId: statement.id,
       });
     } catch (error) {
+      // Rollback transaction if there is an error
       await transaction.rollback();
       console.error(
         "Error creating Quarterly Expenditure Statement on Capital Equipment:",
@@ -437,14 +460,15 @@ export const createQuarterlyExpenditureStatementOnCapitalEquipment = async (
   }
 };
 
+
 export const createQuarterlyStatusReport = async (req, res) => {
   const {
     projectName,
     projectCode,
     progressQuarter,
-    principalAgency,
-    subAgency,
-    projectCoordinator,
+    principalImplementingAgency,
+    subImplementingAgencies,
+    projectInvestigators,
     startDate,
     completionDate,
     barChartStatus,
@@ -460,9 +484,9 @@ export const createQuarterlyStatusReport = async (req, res) => {
       projectName,
       projectCode,
       progressQuarter,
-      principalAgency,
-      subAgency,
-      projectCoordinator,
+      principalImplementingAgency,
+      subImplementingAgencies,
+      projectInvestigators,
       startDate,
       completionDate,
       barChartStatus,
@@ -492,8 +516,9 @@ export const createRevisionCost = async (req, res) => {
   const {
     projectName,
     projectCode,
-    principalAgency,
-    projectLeader,
+    principalImplementingAgency,
+    subImplementingAgencies,
+    projectInvestigators,
     startDate,
     scheduledCompletionDate,
     approvedObjective,
@@ -510,8 +535,9 @@ export const createRevisionCost = async (req, res) => {
     const revisionCost = await RevisionCost.create({
       projectName,
       projectCode,
-      principalAgency,
-      projectLeader,
+      principalImplementingAgency,
+      subImplementingAgencies,
+      projectInvestigators,
       startDate,
       scheduledCompletionDate,
       approvedObjective,

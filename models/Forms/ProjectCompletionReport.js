@@ -9,6 +9,7 @@ const ProjectCompletionReport = sequelize.define(
       allowNull: false,
       validate: {
         notEmpty: true,
+        len: [1, 255], // Max character length
       },
     },
     projectCode: {
@@ -16,19 +17,29 @@ const ProjectCompletionReport = sequelize.define(
       allowNull: false,
       validate: {
         notEmpty: true,
+        len: [1, 50], // Example limit for code
       },
     },
     commencementDate: {
       type: DataTypes.DATE,
       allowNull: false,
+      validate: {
+        isDate: true,
+      },
     },
     approvedCompletionDate: {
       type: DataTypes.DATE,
       allowNull: false,
+      validate: {
+        isDate: true,
+      },
     },
     actualCompletionDate: {
       type: DataTypes.DATE,
       allowNull: false,
+      validate: {
+        isDate: true,
+      },
     },
     objectives: {
       type: DataTypes.TEXT,
@@ -88,17 +99,11 @@ const ProjectCompletionReport = sequelize.define(
     },
     associatedPersons: {
       type: DataTypes.TEXT,
-      allowNull: false,
-      validate: {
-        notEmpty: true,
-      },
+      allowNull: true,
     },
     finalExpenditureStatement: {
       type: DataTypes.TEXT,
-      allowNull: false,
-      validate: {
-        notEmpty: true,
-      },
+      allowNull: true,
     },
   },
   {
@@ -106,4 +111,4 @@ const ProjectCompletionReport = sequelize.define(
   }
 );
 
-export default ProjectCompletionReport
+export default ProjectCompletionReport;
