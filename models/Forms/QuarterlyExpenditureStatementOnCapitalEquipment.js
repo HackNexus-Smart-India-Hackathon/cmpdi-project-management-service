@@ -1,9 +1,27 @@
 import { DataTypes } from "sequelize";
 import { sequelize } from "../../config/db.config.js";
 
-const EquipmentDetail = sequelize.define(
-  "EquipmentDetail",
+const QuarterlyExpenditureStatementOnCapitalEquipment = sequelize.define(
+  "QuarterlyExpenditureStatementOnCapitalEquipment",
   {
+    id: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      autoIncrement: true,
+      primaryKey: true,
+    },
+    projectId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: "Project",
+        key: "id",
+      },
+    },
+    quarterEnding: {
+      type: DataTypes.DATE,
+      allowNull: false,
+    },
     equipmentName: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -33,14 +51,12 @@ const EquipmentDetail = sequelize.define(
       },
     },
     totalValue: {
-      // Optional if you plan to calculate it on the frontend
       type: DataTypes.FLOAT,
-      allowNull: true, // Make it optional for frontend calculation
+      allowNull: true,
     },
     approvedCost: {
-      // Optional if you plan to calculate it on the frontend
       type: DataTypes.FLOAT,
-      allowNull: true, // Make it optional for frontend calculation
+      allowNull: true,
     },
     progressiveExpenditure: {
       type: DataTypes.FLOAT,
@@ -49,63 +65,10 @@ const EquipmentDetail = sequelize.define(
         min: 0,
       },
     },
-    statementId: {
-      // Foreign key linking to the statement
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      references: {
-        model: "QuarterlyExpenditureStatementOnCapitalEquipments", // name of the statement table
-        key: "id",
-      },
-    },
   },
   {
-    timestamps: false,
+    timestamps: true, // Retaining timestamps for records
   }
 );
 
-const QuarterlyExpenditureStatementOnCapitalEquipment = sequelize.define(
-  "QuarterlyExpenditureStatementOnCapitalEquipment",
-  {
-    projectName: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      validate: {
-        notEmpty: true,
-      },
-    },
-    projectCode: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      validate: {
-        notEmpty: true,
-      },
-    },
-    companyName: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      validate: {
-        notEmpty: true,
-      },
-    },
-    quarterEnding: {
-      type: DataTypes.DATE,
-      allowNull: false,
-    },
-  },
-  {
-    timestamps: true, // to store the time when a statement is created
-  }
-);
-
-export { EquipmentDetail, QuarterlyExpenditureStatementOnCapitalEquipment };
-
-// Define associations
-QuarterlyExpenditureStatementOnCapitalEquipment.hasMany(EquipmentDetail, {
-  foreignKey: "statementId", // reference to statement
-  as: "equipmentDetails", // alias for easier referencing in the model
-});
-EquipmentDetail.belongsTo(QuarterlyExpenditureStatementOnCapitalEquipment, {
-  foreignKey: "statementId", // reference to statement
-  as: "statement", // alias for easier referencing
-});
+export default QuarterlyExpenditureStatementOnCapitalEquipment;

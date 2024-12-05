@@ -4,34 +4,18 @@ import { sequelize } from "../../config/db.config.js";
 const ProjectCompletionReport = sequelize.define(
   "ProjectCompletionReport",
   {
-    title: {
-      type: DataTypes.STRING,
+    id: {
+      type: DataTypes.INTEGER,
       allowNull: false,
-      validate: {
-        notEmpty: true,
-        len: [1, 255], // Max character length
-      },
+      autoIncrement: true,
+      primaryKey: true,
     },
-    projectCode: {
-      type: DataTypes.STRING,
+    projectId: {
+      type: DataTypes.INTEGER,
       allowNull: false,
-      validate: {
-        notEmpty: true,
-        len: [1, 50], // Example limit for code
-      },
-    },
-    commencementDate: {
-      type: DataTypes.DATE,
-      allowNull: false,
-      validate: {
-        isDate: true,
-      },
-    },
-    approvedCompletionDate: {
-      type: DataTypes.DATE,
-      allowNull: false,
-      validate: {
-        isDate: true,
+      references: {
+        model: "Project",
+        key: "id",
       },
     },
     actualCompletionDate: {

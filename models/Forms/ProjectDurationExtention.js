@@ -4,41 +4,19 @@ import { sequelize } from "../../config/db.config.js";
 const ProjectDurationExtension = sequelize.define(
   "ProjectDurationExtension",
   {
-    projectName: {
-      type: DataTypes.STRING,
+    id: {
+      type: DataTypes.INTEGER,
       allowNull: false,
-      validate: {
-        notEmpty: true,
+      autoIncrement: true,
+      primaryKey: true,
+    },
+    projectId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: "Project",
+        key: "id",
       },
-    },
-    projectCode: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      validate: {
-        notEmpty: true,
-      },
-    },
-    principalAgency: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      validate: {
-        notEmpty: true,
-      },
-    },
-    projectLeader: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      validate: {
-        notEmpty: true,
-      },
-    },
-    startDate: {
-      type: DataTypes.DATE,
-      allowNull: false,
-    },
-    completionDate: {
-      type: DataTypes.DATE,
-      allowNull: false,
     },
     approvedObjectives: {
       type: DataTypes.TEXT,
@@ -96,18 +74,9 @@ const ProjectDurationExtension = sequelize.define(
         min: 0,
       },
     },
-    // Additional fields for details, scope, or conclusions if needed
-    furtherStudiesNeeded: {
-      type: DataTypes.TEXT,
-      allowNull: true,
-    },
-    applicationScope: {
-      type: DataTypes.TEXT,
-      allowNull: true,
-    },
   },
   {
-    timestamps: true, // Automatically adds createdAt and updatedAt
+    timestamps: true,
   }
 );
 

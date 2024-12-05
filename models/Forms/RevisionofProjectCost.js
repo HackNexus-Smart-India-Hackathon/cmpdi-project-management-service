@@ -1,47 +1,24 @@
 import { DataTypes } from "sequelize";
 import { sequelize } from "../../config/db.config.js";
 
-// Define the model for RevisionCost
 const RevisionCost = sequelize.define(
   "RevisionCost",
   {
-    projectName: {
-      type: DataTypes.STRING,
+    id: {
+      type: DataTypes.INTEGER,
       allowNull: false,
-      validate: {
-        notEmpty: true,
+      autoIncrement: true,
+      primaryKey: true,
+    },
+    projectId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: "Project",
+        key: "id",
       },
     },
-    projectCode: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      validate: {
-        notEmpty: true,
-      },
-    },
-    principalImplementingAgency: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      validate: {
-        notEmpty: true,
-      },
-    },
-    subImplementingAgencies: {
-      type: DataTypes.ARRAY(DataTypes.STRING), // For storing multiple agencies
-      allowNull: true,
-    },
-    projectInvestigators: {
-      type: DataTypes.ARRAY(DataTypes.STRING), // For storing multiple investigators
-      allowNull: true,
-    },
-    startDate: {
-      type: DataTypes.DATE,
-      allowNull: false,
-    },
-    scheduledCompletionDate: {
-      type: DataTypes.DATE,
-      allowNull: false,
-    },
+
     approvedObjective: {
       type: DataTypes.TEXT,
       allowNull: false,
