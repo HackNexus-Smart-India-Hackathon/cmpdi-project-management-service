@@ -8,11 +8,14 @@ import {
 } from "../utils/emailSender.js";
 import bcrypt from "bcrypt";
 import { v4 as uuidv4 } from "uuid";
+import axios from "axios";
 import { Op } from "sequelize";
 
 export const createProject = async (req, res) => {
   try {
     const {
+      adminName , 
+      adminEmail,
       projectTitle,
       fundingSource,
       description,
@@ -25,8 +28,9 @@ export const createProject = async (req, res) => {
       status,
       adminId,
     } = req.body;
-
     if (
+      !adminName || 
+      !adminEmail||
       !fundingSource ||
       !projectTitle ||
       !principalImplementingAgency ||
@@ -45,6 +49,8 @@ export const createProject = async (req, res) => {
     const projectCode = await generateProjectCode(fundingSource);
 
     const transaction = await Project.sequelize.transaction();
+
+    axios.post('loclahost:8000/createUser' , )
 
     try {
       const adminUser = await User.findOne(
@@ -111,8 +117,60 @@ export const createProject = async (req, res) => {
               userId: user.id,
             },
             { transaction }
-          );
+          ); 
+          projectInvestigators.forEach(({email})=>{
+            axios.post('localhost:8000/createUser' , {
+              username,
+              email , 
+              role,
+              projectId : project.id
+            })
+            .then((created)=>{
+              if(created == "User created successfully")
+                console.log("Chat created")
+            })
+            .catch(error=>{
+              console.error(error)
+            })
+          })
+          axios.post('localhost:8000/createUser' , {
+            username : adminName,
+            email : adminEmail , 
+            role : "ADMIN",
+            projectId : project.id
+          })
+          .then((created)=>{
+            if(created == "User created successfully")
+              console.log("Chat created")
+          })
+          .catch(error=>{
+            console.error(error)
+          })
+        }   
+        for(let i = 0; i < projectInvestigators.length ; i++){
+          let investigator = ProjectInvestigators[i];
+          for (let j = 0; j < array.length; j++) {
+            if(j != i){
+              axios.post('localhost:8000/privateChat' , {
+                username : investigator.username,
+                email : investigator.email,
+                role : investigator.role,
+                projectId : project.id,
+                to: investigator[j]
+
+              })
+              .then((created)=>{
+                if(created == "private chat established")
+                  console.log("Chat created")
+                console.log(created)
+              })
+              .catch((err)=>{
+                console.log(err)
+              })
+            }
+          }
         }
+        
       }
 
       await project.save({ transaction });
