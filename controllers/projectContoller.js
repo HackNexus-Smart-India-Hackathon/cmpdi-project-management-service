@@ -37,6 +37,7 @@ export const createProject = async (req, res) => {
       !status ||
       !adminId
     ) {
+      console.log(req.body);
       return res
         .status(400)
         .json({ success: false, message: "Missing required fields" });
@@ -45,7 +46,7 @@ export const createProject = async (req, res) => {
     const projectCode = await generateProjectCode(fundingSource);
 
     const transaction = await Project.sequelize.transaction();
-    let adminName = null;
+    // let adminName = null;
     let adminEmail1 = null;
     try {
       const adminUser = await User.findOne(
@@ -58,12 +59,12 @@ export const createProject = async (req, res) => {
           message: "Admin user not found",
         });
       }
-      adminName = adminUser.username;
+      // adminName = adminUser.username;
       adminEmail1 = adminUser.email;
 
       const adminEmail = adminUser.email;
-      console.log("adminEmail", adminEmail);
-      console.log("projectInvestigators", projectInvestigators);
+      // console.log("adminEmail", adminEmail);
+      // console.log("projectInvestigators", projectInvestigators);
 
       const project = await Project.create(
         {

@@ -27,26 +27,26 @@ const router = express.Router();
 
 //fund-requisition
 router.post("/fund-requisition", createFundRequisition);
-router.get("/fund-requisition/:projectId", getFundRequisitionByProjectId);
-router.get("/fund-requisition/:formId", getFundRequisitionById);
+router.get("/fund-requisition/project/:projectId", getFundRequisitionByProjectId);
+router.get("/fund-requisition/form/:formId", getFundRequisitionById);
 //project-completion-report
 router.post("/project-completion-report", createProjectCompletionReport);
 router.get(
-  "/project-completion-report/:projectId",
+  "/project-completion-report/project/:projectId",
   getProjectCompletionReportByProjectId
 );
 router.get(
-  "/project-completion-report/:formId",
+  "/project-completion-report/form/:formId",
   getProjectCompletionReportById
 );
 //project-duration-extension
 router.post("/project-duration-extension", createProjectDurationExtension);
 router.get(
-  "/project-duration-extension/:projectId",
+  "/project-duration-extension/project/:projectId",
   getProjectDurationExtensionByProjectId
 );
 router.get(
-  "/project-duration-extension/:formId",
+  "/project-duration-extension/form/:formId",
   getProjectDurationExtensionById
 );
 //quarterly-expenditure-statement
@@ -55,11 +55,11 @@ router.post(
   createQuarterlyExpenditureStatement
 );
 router.get(
-  "/quarterly-expenditure-statement/:projectId",
+  "/quarterly-expenditure-statement/project/:projectId",
   getQuarterlyExpenditureStatementByProjectId
 );
 router.get(
-  "/quarterly-expenditure-statement/:formId",
+  "/quarterly-expenditure-statement/form/:formId",
   getQuarterlyExpenditureStatementById
 );
 //quarterly-expenditure-statement-capital-equipment
@@ -68,23 +68,23 @@ router.post(
   createQuarterlyExpenditureStatementOnCapitalEquipment
 );
 router.get(
-  "/quarterly-expenditure-statement-capital-equipment/:projectId",
+  "/quarterly-expenditure-statement-capital-equipment/project/:projectId",
   getQuarterlyExpenditureStatementOnCapitalEquipmentByProjectId
 );
 router.get(
-  "/quarterly-expenditure-statement-capital-equipment/:formId",
+  "/quarterly-expenditure-statement-capital-equipment/form/:formId",
   getQuarterlyExpenditureStatementOnCapitalEquipmentById
 );
 //quarterly-status-report
 router.post("/quarterly-status-report", createQuarterlyStatusReport);
 router.get(
-  "/quarterly-status-report/:projectId",
+  "/quarterly-status-report/project/:projectId",
   getQuarterlyStatusReportByProjectId
 );
-router.get("/quarterly-status-report/:formId", getQuarterlyStatusReportById);
+router.get("/quarterly-status-report/form/:formId", getQuarterlyStatusReportById);
 //revision-cost-report
 router.post("/revision-cost-report", createRevisionCost);
-router.get("/revision-cost-report/:projectId", getRevisionCostByProjectId);
-router.get("/revision-cost-report/:formId", getRevisionCostById);
+router.get("/revision-cost-report/project/:projectId", getRevisionCostByProjectId);
+router.get("/revision-cost-report/form/:formId", getRevisionCostById);
 
 export default router;
