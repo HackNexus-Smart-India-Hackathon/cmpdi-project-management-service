@@ -4,18 +4,18 @@ import { sequelize } from "../../config/db.config.js";
 const QuarterlyStatusReport = sequelize.define(
   "QuarterlyStatusReport",
   {
-    projectName: {
-      type: DataTypes.STRING,
+    id: {
+      type: DataTypes.INTEGER,
       allowNull: false,
-      validate: {
-        notEmpty: true,
-      },
+      autoIncrement: true,
+      primaryKey: true,
     },
-    projectCode: {
-      type: DataTypes.STRING,
+    projectId: {
+      type: DataTypes.INTEGER,
       allowNull: false,
-      validate: {
-        notEmpty: true,
+      references: {
+        model: "Project",
+        key: "id",
       },
     },
     progressQuarter: {
@@ -24,32 +24,6 @@ const QuarterlyStatusReport = sequelize.define(
       validate: {
         notEmpty: true,
       },
-    },
-    principalImplementingAgency: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      validate: {
-        notEmpty: true,
-      },
-    },
-    subImplementingAgencies: {
-      type: DataTypes.JSON,
-      allowNull: false,
-      defaultValue: [],
-    },
-
-    projectInvestigators: {
-      type: DataTypes.JSON,
-      allowNull: false,
-      defaultValue: [],
-    },
-    startDate: {
-      type: DataTypes.DATE,
-      allowNull: false,
-    },
-    completionDate: {
-      type: DataTypes.DATE,
-      allowNull: false,
     },
     barChartStatus: {
       type: DataTypes.TEXT,

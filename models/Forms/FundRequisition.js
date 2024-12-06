@@ -4,17 +4,19 @@ import { sequelize } from "../../config/db.config.js";
 const FundRequisition = sequelize.define(
   "FundRequisition",
   {
-    projectTitle: {
-      type: DataTypes.STRING,
+    id: {
+      type: DataTypes.INTEGER,
       allowNull: false,
+      autoIncrement: true,
+      primaryKey: true,
     },
-    projectCode: {
-      type: DataTypes.STRING,
+    projectId: {
+      type: DataTypes.INTEGER,
       allowNull: false,
-    },
-    institutionName: {
-      type: DataTypes.STRING,
-      allowNull: false,
+      references: {
+        model: "Project",
+        key: "id",
+      },
     },
     yearPeriod: {
       type: DataTypes.STRING,

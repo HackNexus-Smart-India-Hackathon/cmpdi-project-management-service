@@ -12,39 +12,16 @@ import {
 import QuarterlyStatusReport from "../models/Forms/QuaterlyStatusReport.js";
 import RevisionCost from "../models/Forms/RevisionofProjectCost.js";
 
+//Fund Requisition
 export const createFundRequisition = async (req, res) => {
   try {
-    const { projectTitle, projectCode, institutionName, yearPeriod, funds } =
-      req.body;
+    const { projectId, yearPeriod, funds } = req.body;
 
-    const {
-      LandBuilding,
-      CapitalEquipment,
-      Manpower,
-      Consumables,
-      Travel,
-      Contingencies,
-      WorkshopSeminar,
-    } = funds;
-
-    console.log(req.body);
-
-    if (
-      !projectTitle ||
-      !projectCode ||
-      !institutionName ||
-      !yearPeriod ||
-      !LandBuilding ||
-      !CapitalEquipment ||
-      !Manpower ||
-      !Consumables ||
-      !Travel ||
-      !Contingencies ||
-      !WorkshopSeminar
-    ) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Missing required fields" });
+    if (!projectId || !yearPeriod || !funds) {
+      return res.status(400).json({
+        success: false,
+        message: "Missing required fields (projectId, yearPeriod, or funds)",
+      });
     }
 
     const transaction = await FundRequisition.sequelize.transaction();
@@ -52,26 +29,16 @@ export const createFundRequisition = async (req, res) => {
     try {
       const fundRequisition = await FundRequisition.create(
         {
-          projectTitle: projectTitle,
-          projectCode,
-          institutionName,
+          projectId,
           yearPeriod,
-          funds: {
-            LandBuilding: LandBuilding,
-            CapitalEquipment: CapitalEquipment,
-            Manpower: Manpower,
-            Consumables: Consumables,
-            Travel: Travel,
-            Contingencies: Contingencies,
-            WorkshopSeminar: WorkshopSeminar,
-          },
+          funds,
         },
         { transaction }
       );
 
       await transaction.commit();
 
-      res.status(201).json({
+      return res.status(201).json({
         success: true,
         message: "Fund requisition created successfully",
         fundRequisitionId: fundRequisition.id,
@@ -79,7 +46,7 @@ export const createFundRequisition = async (req, res) => {
     } catch (error) {
       await transaction.rollback();
       console.error("Error in createFundRequisition:", error.message);
-      res.status(500).json({
+      return res.status(500).json({
         success: false,
         message: "An error occurred while creating the fund requisition",
         details: error.message,
@@ -87,7 +54,7 @@ export const createFundRequisition = async (req, res) => {
     }
   } catch (error) {
     console.error("Error in createFundRequisition:", error.message);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: "An internal server error occurred",
       details: error.message,
@@ -95,13 +62,68 @@ export const createFundRequisition = async (req, res) => {
   }
 };
 
+export const getFundRequisitionByProjectId = async (req, res) => {
+  const { projectId } = req.params;
+
+  try {
+    const fundRequisitions = await FundRequisition.findAll({
+      where: { projectId },
+    });
+
+    if (fundRequisitions.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: `No fund requisitions found for projectId: ${projectId}`,
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: fundRequisitions,
+    });
+  } catch (error) {
+    console.error("Error in getFundRequisitionsByProjectId:", error.message);
+    return res.status(500).json({
+      success: false,
+      message: "An error occurred while fetching fund requisitions",
+      details: error.message,
+    });
+  }
+};
+
+export const getFundRequisitionById = async (req, res) => {
+  const { formId } = req.params;
+
+  try {
+    const fundRequisition = await FundRequisition.findByPk(formId);
+
+    if (!fundRequisition) {
+      return res.status(404).json({
+        success: false,
+        message: `No fund requisition found for formId: ${formId}`,
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: fundRequisition,
+    });
+  } catch (error) {
+    console.error("Error in getFundRequisitionById:", error.message);
+    return res.status(500).json({
+      success: false,
+      message: "An error occurred while fetching the fund requisition",
+      details: error.message,
+    });
+  }
+};
+
+//Project Completion Report
+
 export const createProjectCompletionReport = async (req, res) => {
   try {
     const {
-      title,
-      projectCode,
-      commencementDate,
-      approvedCompletionDate,
+      projectId,
       actualCompletionDate,
       objectives,
       workProgram,
@@ -117,10 +139,7 @@ export const createProjectCompletionReport = async (req, res) => {
 
     const missingFields = [];
     [
-      "title",
-      "projectCode",
-      "commencementDate",
-      "approvedCompletionDate",
+      "projectId",
       "actualCompletionDate",
       "objectives",
       "workProgram",
@@ -131,7 +150,7 @@ export const createProjectCompletionReport = async (req, res) => {
       "conclusions",
       "applicationScope",
     ].forEach((field) => {
-      if (!req.body[field]?.trim()) missingFields.push(field);
+      if (!req.body[field]) missingFields.push(field);
     });
 
     if (missingFields.length > 0) {
@@ -148,12 +167,9 @@ export const createProjectCompletionReport = async (req, res) => {
     const transaction = await ProjectCompletionReport.sequelize.transaction();
 
     try {
-      const projectCompletionReport = await ProjectCompletionReport.create(
+      const report = await ProjectCompletionReport.create(
         {
-          title,
-          projectCode,
-          commencementDate,
-          approvedCompletionDate,
+          projectId,
           actualCompletionDate,
           objectives,
           workProgram,
@@ -174,7 +190,7 @@ export const createProjectCompletionReport = async (req, res) => {
       return res.status(201).json({
         success: true,
         message: "Project Completion Report created successfully",
-        data: { id: projectCompletionReport.id },
+        data: { id: report.id },
       });
     } catch (error) {
       await transaction.rollback();
@@ -196,15 +212,72 @@ export const createProjectCompletionReport = async (req, res) => {
   }
 };
 
+export const getProjectCompletionReportByProjectId = async (req, res) => {
+  const { projectId } = req.params;
+
+  try {
+    const reports = await ProjectCompletionReport.findAll({
+      where: { projectId },
+    });
+
+    if (reports.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: `No project completion reports found for project ID: ${projectId}`,
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: reports,
+    });
+  } catch (error) {
+    console.error(
+      "Error in getProjectCompletionReportsByProjectId:",
+      error.message
+    );
+    return res.status(500).json({
+      success: false,
+      message:
+        "An error occurred while fetching the project completion reports",
+      details: error.message,
+    });
+  }
+};
+
+export const getProjectCompletionReportById = async (req, res) => {
+  const { formId } = req.params;
+
+  try {
+    const report = await ProjectCompletionReport.findByPk(formId);
+
+    if (!report) {
+      return res.status(404).json({
+        success: false,
+        message: `No project completion report found with ID: ${formId}`,
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: report,
+    });
+  } catch (error) {
+    console.error("Error in getProjectCompletionReportById:", error.message);
+    return res.status(500).json({
+      success: false,
+      message: "An error occurred while fetching the project completion report",
+      details: error.message,
+    });
+  }
+};
+
+//Project Duration Extension
+
 export const createProjectDurationExtension = async (req, res) => {
   try {
     const {
-      projectName,
-      projectCode,
-      principalAgency,
-      projectLeader,
-      startDate,
-      completionDate,
+      projectId,
       approvedObjectives,
       approvedWorkProgram,
       workDoneDetails,
@@ -214,15 +287,9 @@ export const createProjectDurationExtension = async (req, res) => {
       totalCost,
       actualExpenditure,
     } = req.body;
-
-    // Validate required fields
-    const requiredFields = [
-      "projectName",
-      "projectCode",
-      "principalAgency",
-      "projectLeader",
-      "startDate",
-      "completionDate",
+    const missingFields = [];
+    [
+      "projectId",
       "approvedObjectives",
       "approvedWorkProgram",
       "workDoneDetails",
@@ -231,29 +298,27 @@ export const createProjectDurationExtension = async (req, res) => {
       "extensionReason",
       "totalCost",
       "actualExpenditure",
-    ];
-
-    const missingFields = requiredFields.filter((field) => !req.body[field]);
+    ].forEach((field) => {
+      if (!req.body[field]) missingFields.push(field);
+    });
 
     if (missingFields.length > 0) {
       return res.status(400).json({
         success: false,
         message: "Missing required fields",
-        missingFields,
+        fieldErrors: missingFields.reduce((errors, field) => {
+          errors[field] = `${field} is required.`;
+          return errors;
+        }, {}),
       });
     }
 
     const transaction = await ProjectDurationExtension.sequelize.transaction();
 
     try {
-      const projectDurationExtension = await ProjectDurationExtension.create(
+      const extension = await ProjectDurationExtension.create(
         {
-          projectName,
-          projectCode,
-          principalAgency,
-          projectLeader,
-          startDate,
-          completionDate,
+          projectId,
           approvedObjectives,
           approvedWorkProgram,
           workDoneDetails,
@@ -271,7 +336,7 @@ export const createProjectDurationExtension = async (req, res) => {
       return res.status(201).json({
         success: true,
         message: "Project Duration Extension created successfully",
-        projectDurationExtensionId: projectDurationExtension.id,
+        data: { id: extension.id },
       });
     } catch (error) {
       await transaction.rollback();
@@ -293,105 +358,255 @@ export const createProjectDurationExtension = async (req, res) => {
   }
 };
 
-export const createQuarterlyExpenditureStatement = async (req, res) => {
-  const {
-    projectName,
-    projectCode,
-    companyName,
-    quarterEnding,
-    fundsAdvanced,
-    expenditureToDate,
-    unspentBalance,
-    financialDetails,
-  } = req.body;
+export const getProjectDurationExtensionByProjectId = async (req, res) => {
+  const { projectId } = req.params;
 
   try {
+    const extensions = await ProjectDurationExtension.findAll({
+      where: { projectId },
+    });
+
+    if (extensions.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: `No project duration extensions found for project ID: ${projectId}`,
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: extensions,
+    });
+  } catch (error) {
+    console.error(
+      "Error in getProjectDurationExtensionsByProjectId:",
+      error.message
+    );
+    return res.status(500).json({
+      success: false,
+      message:
+        "An error occurred while fetching the project duration extensions",
+      details: error.message,
+    });
+  }
+};
+
+export const getProjectDurationExtensionById = async (req, res) => {
+  const { formId } = req.params;
+
+  try {
+    const extension = await ProjectDurationExtension.findByPk(formId);
+
+    if (!extension) {
+      return res.status(404).json({
+        success: false,
+        message: `No project duration extension found with ID: ${formId}`,
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: extension,
+    });
+  } catch (error) {
+    console.error("Error in getProjectDurationExtensionById:", error.message);
+    return res.status(500).json({
+      success: false,
+      message:
+        "An error occurred while fetching the project duration extension",
+      details: error.message,
+    });
+  }
+};
+
+//Quaterly Expenditure statement
+
+export const createQuarterlyExpenditureStatement = async (req, res) => {
+  try {
+    const {
+      projectId,
+      quarterEnding,
+      fundsAdvanced,
+      expenditureToDate,
+      unspentBalance,
+      category,
+      totalApproved,
+      sanctionedProvision,
+      previousYear,
+      previousQuarter,
+      currentQuarter,
+    } = req.body;
+
+    const missingFields = [];
+    [
+      "projectId",
+      "quarterEnding",
+      "fundsAdvanced",
+      "expenditureToDate",
+      "unspentBalance",
+      "category",
+    ].forEach((field) => {
+      if (!req.body[field]) missingFields.push(field);
+    });
+
+    if (missingFields.length > 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Missing required fields",
+        fieldErrors: missingFields.reduce((errors, field) => {
+          errors[field] = `${field} is required.`;
+          return errors;
+        }, {}),
+      });
+    }
+
     const transaction =
       await QuarterlyExpenditureStatement.sequelize.transaction();
 
     try {
-      // Create the QuarterlyExpenditureStatement
       const statement = await QuarterlyExpenditureStatement.create(
         {
-          projectName,
-          projectCode,
-          companyName,
+          projectId,
           quarterEnding,
           fundsAdvanced,
           expenditureToDate,
           unspentBalance,
+          category,
+          totalApproved: totalApproved || 0,
+          sanctionedProvision: sanctionedProvision || 0,
+          previousYear: previousYear || 0,
+          previousQuarter: previousQuarter || 0,
+          currentQuarter: currentQuarter || 0,
         },
         { transaction }
       );
-
-      // Create associated FinancialDetails if provided
-      if (Array.isArray(financialDetails) && financialDetails.length > 0) {
-        const details = financialDetails.map((detail) => ({
-          category: detail.category,
-          totalApproved: detail.totalApproved || 0,
-          sanctionedProvision: detail.sanctionedProvision || 0,
-          previousYear: detail.previousYear || 0,
-          previousQuarter: detail.previousQuarter || 0,
-          currentQuarter: detail.currentQuarter || 0,
-          statementId: statement.id,
-        }));
-
-        await FinancialDetail.bulkCreate(details, { transaction });
-      }
 
       await transaction.commit();
 
       return res.status(201).json({
         success: true,
         message: "Quarterly Expenditure Statement created successfully",
-        statementId: statement.id,
+        data: { id: statement.id },
       });
     } catch (error) {
-      // Rollback the transaction on error
       await transaction.rollback();
-      console.error("Error creating Quarterly Expenditure Statement:", error);
+      console.error(
+        "Error in createQuarterlyExpenditureStatement:",
+        error.message
+      );
       return res.status(500).json({
         success: false,
         message:
           "An error occurred while creating the Quarterly Expenditure Statement",
-        error: error.message,
+        details: error.message,
       });
     }
   } catch (error) {
-    console.error("Transaction error:", error);
+    console.error(
+      "Error in createQuarterlyExpenditureStatement:",
+      error.message
+    );
     return res.status(500).json({
       success: false,
       message: "An internal server error occurred",
-      error: error.message,
+      details: error.message,
     });
   }
 };
+
+export const getQuarterlyExpenditureStatementById = async (req, res) => {
+  const { formId } = req.params;
+
+  try {
+    const statement = await QuarterlyExpenditureStatement.findByPk(formId);
+
+    if (!statement) {
+      return res.status(404).json({
+        success: false,
+        message: `No Quarterly Expenditure Statement found with ID: ${formId}`,
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: statement,
+    });
+  } catch (error) {
+    console.error(
+      "Error in getQuarterlyExpenditureStatementById:",
+      error.message
+    );
+    return res.status(500).json({
+      success: false,
+      message:
+        "An error occurred while fetching the Quarterly Expenditure Statement",
+      details: error.message,
+    });
+  }
+};
+
+export const getQuarterlyExpenditureStatementByProjectId = async (
+  req,
+  res
+) => {
+  const { projectId } = req.params;
+
+  try {
+    const statements = await QuarterlyExpenditureStatement.findAll({
+      where: { projectId },
+    });
+
+    if (statements.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: `No Quarterly Expenditure Statements found for project ID: ${projectId}`,
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: statements,
+    });
+  } catch (error) {
+    console.error(
+      "Error in getQuarterlyExpenditureStatementsByProjectId:",
+      error.message
+    );
+    return res.status(500).json({
+      success: false,
+      message:
+        "An error occurred while fetching the Quarterly Expenditure Statements",
+      details: error.message,
+    });
+  }
+};
+
+//Quarterly Expenditure Statement on Capital Equipment
 
 export const createQuarterlyExpenditureStatementOnCapitalEquipment = async (
   req,
   res
 ) => {
-  const {
-    projectName,
-    projectCode,
-    companyName,
-    quarterEnding,
-    equipmentDetails, // Array of equipment details
-  } = req.body;
+  const { projectId, quarterEnding, equipmentDetails } = req.body;
 
-  // Basic validation
-  if (!projectName || !projectCode || !companyName || !quarterEnding) {
-    return res.status(400).json({
-      success: false,
-      message:
-        "Project Name, Project Code, Company Name, and Quarter Ending are required.",
-    });
-  }
-
+  const missingFields = [];
+  if (!projectId) missingFields.push("projectId");
+  if (!quarterEnding) missingFields.push("quarterEnding");
   if (!Array.isArray(equipmentDetails) || equipmentDetails.length === 0) {
     return res.status(400).json({
       success: false,
       message: "At least one equipment detail is required.",
+    });
+  }
+
+  if (missingFields.length > 0) {
+    return res.status(400).json({
+      success: false,
+      message: "Missing required fields",
+      fieldErrors: missingFields.reduce((errors, field) => {
+        errors[field] = `${field} is required.`;
+        return errors;
+      }, {}),
     });
   }
 
@@ -400,34 +615,33 @@ export const createQuarterlyExpenditureStatementOnCapitalEquipment = async (
       await QuarterlyExpenditureStatementOnCapitalEquipment.sequelize.transaction();
 
     try {
-      // Create the statement (Quarterly Expenditure)
       const statement =
         await QuarterlyExpenditureStatementOnCapitalEquipment.create(
           {
-            projectName,
-            projectCode,
-            companyName,
+            projectId,
             quarterEnding,
           },
           { transaction }
         );
+      const equipmentPromises = equipmentDetails.map((detail) => {
+        return QuarterlyExpenditureStatementOnCapitalEquipment.create(
+          {
+            equipmentName: detail.equipmentName,
+            supplierName: detail.supplierName,
+            units: detail.units,
+            unitValue: detail.unitValue,
+            totalValue: detail.totalValue || 0,
+            approvedCost: detail.approvedCost || 0,
+            progressiveExpenditure: detail.progressiveExpenditure,
+            quarterEnding: statement.quarterEnding,
+            projectId: statement.projectId,
+          },
+          { transaction }
+        );
+      });
 
-      // Map the equipment details to include the statementId
-      const details = equipmentDetails.map((detail) => ({
-        equipmentName: detail.equipmentName,
-        supplierName: detail.supplierName,
-        units: detail.units,
-        unitValue: detail.unitValue,
-        totalValue: detail.totalValue, // Assume this is calculated on the frontend
-        approvedCost: detail.approvedCost, // Assume this is calculated on the frontend
-        progressiveExpenditure: detail.progressiveExpenditure,
-        statementId: statement.id, // Link to the statement
-      }));
+      await Promise.all(equipmentPromises);
 
-      // Insert the equipment details into the database
-      await EquipmentDetail.bulkCreate(details, { transaction });
-
-      // Commit the transaction
       await transaction.commit();
 
       return res.status(201).json({
@@ -437,7 +651,6 @@ export const createQuarterlyExpenditureStatementOnCapitalEquipment = async (
         statementId: statement.id,
       });
     } catch (error) {
-      // Rollback transaction if there is an error
       await transaction.rollback();
       console.error(
         "Error creating Quarterly Expenditure Statement on Capital Equipment:",
@@ -460,17 +673,82 @@ export const createQuarterlyExpenditureStatementOnCapitalEquipment = async (
   }
 };
 
+export const getQuarterlyExpenditureStatementOnCapitalEquipmentByProjectId =
+  async (req, res) => {
+    const { projectId } = req.params;
+
+    try {
+      const statements =
+        await QuarterlyExpenditureStatementOnCapitalEquipment.findAll({
+          where: { projectId },
+        });
+
+      if (statements.length === 0) {
+        return res.status(404).json({
+          success: false,
+          message: `No Quarterly Expenditure Statements on Capital Equipment found for project ID: ${projectId}`,
+        });
+      }
+
+      return res.status(200).json({
+        success: true,
+        data: statements,
+      });
+    } catch (error) {
+      console.error(
+        "Error in getQuarterlyExpenditureStatementsOnCapitalEquipmentByProjectId:",
+        error.message
+      );
+      return res.status(500).json({
+        success: false,
+        message:
+          "An error occurred while fetching the Quarterly Expenditure Statements on Capital Equipment",
+        details: error.message,
+      });
+    }
+  };
+
+export const getQuarterlyExpenditureStatementOnCapitalEquipmentById = async (
+  req,
+  res
+) => {
+  const { formId } = req.params;
+
+  try {
+    const statement =
+      await QuarterlyExpenditureStatementOnCapitalEquipment.findByPk(formId);
+
+    if (!statement) {
+      return res.status(404).json({
+        success: false,
+        message: `No Quarterly Expenditure Statement on Capital Equipment found with ID: ${formId}`,
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: statement,
+    });
+  } catch (error) {
+    console.error(
+      "Error in getQuarterlyExpenditureStatementOnCapitalEquipmentById:",
+      error.message
+    );
+    return res.status(500).json({
+      success: false,
+      message:
+        "An error occurred while fetching the Quarterly Expenditure Statement on Capital Equipment",
+      details: error.message,
+    });
+  }
+};
+
+//Quarterly Status Report
 
 export const createQuarterlyStatusReport = async (req, res) => {
   const {
-    projectName,
-    projectCode,
+    projectId,
     progressQuarter,
-    principalImplementingAgency,
-    subImplementingAgencies,
-    projectInvestigators,
-    startDate,
-    completionDate,
     barChartStatus,
     workDetails,
     slippageReasons,
@@ -479,16 +757,27 @@ export const createQuarterlyStatusReport = async (req, res) => {
     expenditureStatement,
   } = req.body;
 
+  // Validate required fields
+  if (
+    !projectId ||
+    !progressQuarter ||
+    !barChartStatus ||
+    !workDetails ||
+    !nextQuarterWork ||
+    !expenditureStatement
+  ) {
+    return res.status(400).json({
+      success: false,
+      message:
+        "Project ID, Progress Quarter, Bar Chart Status, Work Details, Next Quarter Work, and Expenditure Statement are required.",
+    });
+  }
+
   try {
+    // Create the quarterly status report in the database
     const report = await QuarterlyStatusReport.create({
-      projectName,
-      projectCode,
+      projectId,
       progressQuarter,
-      principalImplementingAgency,
-      subImplementingAgencies,
-      projectInvestigators,
-      startDate,
-      completionDate,
       barChartStatus,
       workDetails,
       slippageReasons,
@@ -512,15 +801,91 @@ export const createQuarterlyStatusReport = async (req, res) => {
   }
 };
 
+export const getQuarterlyStatusReportByProjectId = async (req, res) => {
+  const { projectId } = req.query;
+
+  if (!projectId) {
+    return res.status(400).json({
+      success: false,
+      message: "'projectId' is required to fetch the reports.",
+    });
+  }
+
+  try {
+    const reports = await QuarterlyStatusReport.findAll({
+      where: { projectId },
+    });
+
+    if (reports.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "No Quarterly Status Reports found for the given projectId.",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Quarterly Status Reports retrieved successfully",
+      data: reports,
+    });
+  } catch (error) {
+    console.error(
+      "Error fetching Quarterly Status Reports by projectId:",
+      error.message
+    );
+    return res.status(500).json({
+      success: false,
+      message: "An error occurred while fetching the reports",
+      error: error.message,
+    });
+  }
+};
+
+export const getQuarterlyStatusReportById = async (req, res) => {
+  const { formId } = req.query;
+
+  if (!formId) {
+    return res.status(400).json({
+      success: false,
+      message: "'formId' is required to fetch the report.",
+    });
+  }
+
+  try {
+    const report = await QuarterlyStatusReport.findOne({
+      where: { id: formId },
+    });
+
+    if (!report) {
+      return res.status(404).json({
+        success: false,
+        message: "No Quarterly Status Report found for the given formId.",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Quarterly Status Report retrieved successfully",
+      data: report,
+    });
+  } catch (error) {
+    console.error(
+      "Error fetching Quarterly Status Report by formId:",
+      error.message
+    );
+    return res.status(500).json({
+      success: false,
+      message: "An error occurred while fetching the report",
+      error: error.message,
+    });
+  }
+};
+
+// Revision Cost
+
 export const createRevisionCost = async (req, res) => {
   const {
-    projectName,
-    projectCode,
-    principalImplementingAgency,
-    subImplementingAgencies,
-    projectInvestigators,
-    startDate,
-    scheduledCompletionDate,
+    projectId,
     approvedObjective,
     approvedWorkProgram,
     workDetails,
@@ -531,15 +896,28 @@ export const createRevisionCost = async (req, res) => {
     justification,
   } = req.body;
 
+  // Basic validation
+  if (
+    !projectId ||
+    !approvedObjective ||
+    !approvedWorkProgram ||
+    !workDetails ||
+    !totalApprovedCost ||
+    !revisedTimeSchedule ||
+    !actualExpenditure ||
+    !revisedCost ||
+    !justification
+  ) {
+    return res.status(400).json({
+      success: false,
+      message: "All fields are required.",
+    });
+  }
+
   try {
+    // Create a new revision cost entry
     const revisionCost = await RevisionCost.create({
-      projectName,
-      projectCode,
-      principalImplementingAgency,
-      subImplementingAgencies,
-      projectInvestigators,
-      startDate,
-      scheduledCompletionDate,
+      projectId,
       approvedObjective,
       approvedWorkProgram,
       workDetails,
@@ -560,6 +938,80 @@ export const createRevisionCost = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "An error occurred while creating the Revision Cost",
+      error: error.message,
+    });
+  }
+};
+
+export const getRevisionCostByProjectId = async (req, res) => {
+  const { projectId } = req.query;
+
+  if (!projectId) {
+    return res.status(400).json({
+      success: false,
+      message: "'projectId' is required to fetch the revision costs.",
+    });
+  }
+
+  try {
+    const revisionCosts = await RevisionCost.findAll({
+      where: { projectId },
+    });
+
+    if (revisionCosts.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "No Revision Costs found for the given projectId.",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Revision Costs retrieved successfully",
+      data: revisionCosts,
+    });
+  } catch (error) {
+    console.error("Error fetching Revision Costs by projectId:", error.message);
+    return res.status(500).json({
+      success: false,
+      message: "An error occurred while fetching the revision costs",
+      error: error.message,
+    });
+  }
+};
+
+export const getRevisionCostById = async (req, res) => {
+  const { formId } = req.query;
+
+  if (!formId) {
+    return res.status(400).json({
+      success: false,
+      message: "'formId' is required to fetch the revision cost.",
+    });
+  }
+
+  try {
+    const revisionCost = await RevisionCost.findOne({
+      where: { id: formId },
+    });
+
+    if (!revisionCost) {
+      return res.status(404).json({
+        success: false,
+        message: "No Revision Cost found for the given formId.",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Revision Cost retrieved successfully",
+      data: revisionCost,
+    });
+  } catch (error) {
+    console.error("Error fetching Revision Cost by formId:", error.message);
+    return res.status(500).json({
+      success: false,
+      message: "An error occurred while fetching the revision cost",
       error: error.message,
     });
   }
