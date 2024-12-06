@@ -13,8 +13,10 @@ import RevisionCost from "./models/Forms/RevisionofProjectCost.js";
 // import { QuarterlyExpenditureStatementOnCapitalEquipment } from "./models/Forms/QuarterlyExpenditureStatementOnCapitalEquipment.js";
 
 import { sequelize } from "./config/db.config.js";
+import dotenv from "dotenv";
+dotenv.config();
 
-const PORT = 5001;
+const PORT = process.env.PORT ;
 
 sequelize
   .sync()
