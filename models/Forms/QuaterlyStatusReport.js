@@ -1,5 +1,6 @@
 import { DataTypes } from "sequelize";
 import { sequelize } from "../../config/db.config.js";
+import Project from "../project.js";
 
 const QuarterlyStatusReport = sequelize.define(
   "QuarterlyStatusReport",
@@ -14,7 +15,7 @@ const QuarterlyStatusReport = sequelize.define(
       type: DataTypes.INTEGER,
       allowNull: false,
       references: {
-        model: "Project",
+        model: "project",
         key: "id",
       },
     },

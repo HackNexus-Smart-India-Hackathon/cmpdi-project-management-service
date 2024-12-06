@@ -7,10 +7,8 @@ import FundRequisition from "./models/Forms/FundRequisition.js";
 import ProjectCompletionReport from "./models/Forms/ProjectCompletionReport.js";
 import ProjectDurationExtension from "./models/Forms/ProjectDurationExtention.js";
 import QuarterlyStatusReport from "./models/Forms/QuaterlyStatusReport.js";
-import {
-  QuarterlyExpenditureStatement,
-  FinancialDetail,
-} from "./models/Forms/QuarterlyExpenditureStatement.js";
+import QuarterlyExpenditureStatement from "./models/Forms/QuarterlyExpenditureStatement.js";
+import RevisionCost from "./models/Forms/RevisionofProjectCost.js";
 
 // import { QuarterlyExpenditureStatementOnCapitalEquipment } from "./models/Forms/QuarterlyExpenditureStatementOnCapitalEquipment.js";
 
@@ -20,16 +18,17 @@ const PORT =  5000;
 
 sequelize
   .sync()
-  .then(() => {
-    console.log("Database connected");
-    app
-      .listen(PORT, () => {
-        console.log(`Server running on port ${PORT}`);
-      })
-      .on("error", (err) => {
-        console.error("Server error:", err.message);
-      });
-  })
-  .catch((error) => {
-    console.error("Error connecting to the database:", error);
-  });
+   await Project.sync()
+     .then(() => {
+       console.log("Database connected");
+       app
+         .listen(PORT, () => {
+           console.log(`Server running on port ${PORT}`);
+         })
+         .on("error", (err) => {
+           console.error("Server error:", err.message);
+         });
+     })
+     .catch((error) => {
+       console.error("Error connecting to the database:", error);
+     });
