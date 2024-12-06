@@ -14,21 +14,21 @@ import RevisionCost from "./models/Forms/RevisionofProjectCost.js";
 
 import { sequelize } from "./config/db.config.js";
 
-const PORT =  5000;
+const PORT = 5001;
 
 sequelize
   .sync()
-   await Project.sync()
-     .then(() => {
-       console.log("Database connected");
-       app
-         .listen(PORT, () => {
-           console.log(`Server running on port ${PORT}`);
-         })
-         .on("error", (err) => {
-           console.error("Server error:", err.message);
-         });
-     })
-     .catch((error) => {
-       console.error("Error connecting to the database:", error);
-     });
+
+  .then(() => {
+    console.log("Database connected");
+    app
+      .listen(PORT, () => {
+        console.log(`Server running on port ${PORT}`);
+      })
+      .on("error", (err) => {
+        console.error("Server error:", err.message);
+      });
+  })
+  .catch((error) => {
+    console.error("Error connecting to the database:", error);
+  });

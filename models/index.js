@@ -14,7 +14,7 @@ Project.hasMany(FundRequisition, {
 });
 FundRequisition.belongsTo(Project, {
   foreignKey: "projectId",
-  as: "project",
+  as: "Project",
 });
 
 Project.hasMany(ProjectCompletionReport, {
@@ -23,7 +23,7 @@ Project.hasMany(ProjectCompletionReport, {
 });
 ProjectCompletionReport.belongsTo(Project, {
   foreignKey: "projectId",
-  as: "project",
+  as: "Project",
 });
 
 Project.hasMany(ProjectDurationExtension, {
@@ -32,7 +32,7 @@ Project.hasMany(ProjectDurationExtension, {
 });
 ProjectDurationExtension.belongsTo(Project, {
   foreignKey: "projectId",
-  as: "project",
+  as: "Project",
 });
 
 Project.hasMany(QuarterlyExpenditureStatement, {
@@ -41,7 +41,7 @@ Project.hasMany(QuarterlyExpenditureStatement, {
 });
 QuarterlyExpenditureStatement.belongsTo(Project, {
   foreignKey: "projectId",
-  as: "project",
+  as: "Project",
 });
 
 Project.hasMany(QuarterlyExpenditureStatementOnCapitalEquipment, {
@@ -50,7 +50,7 @@ Project.hasMany(QuarterlyExpenditureStatementOnCapitalEquipment, {
 });
 QuarterlyExpenditureStatementOnCapitalEquipment.belongsTo(Project, {
   foreignKey: "projectId",
-  as: "project",
+  as: "Project",
 });
 
 Project.hasMany(QuarterlyStatusReport, {
@@ -59,7 +59,7 @@ Project.hasMany(QuarterlyStatusReport, {
 });
 QuarterlyStatusReport.belongsTo(Project, {
   foreignKey: "projectId",
-  as: "project",
+  as: "Project",
 });
 
 Project.hasMany(RevisionCost, {
@@ -68,5 +68,5 @@ Project.hasMany(RevisionCost, {
 });
 RevisionCost.belongsTo(Project, {
   foreignKey: "projectId",
-  as: "project",
+  as: "Project",
 });
