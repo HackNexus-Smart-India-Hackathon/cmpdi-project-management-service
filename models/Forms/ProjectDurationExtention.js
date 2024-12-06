@@ -15,7 +15,7 @@ const ProjectDurationExtension = sequelize.define(
       type: DataTypes.INTEGER,
       allowNull: false,
       references: {
-        model: "project",
+        model: "Project",
         key: "id",
       },
     },

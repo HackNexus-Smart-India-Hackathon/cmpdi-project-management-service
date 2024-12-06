@@ -483,6 +483,7 @@ export const createQuarterlyExpenditureStatement = async (req, res) => {
         data: { id: statement.id },
       });
     } catch (error) {
+      console.log(error);
       await transaction.rollback();
       console.error(
         "Error in createQuarterlyExpenditureStatement:",
@@ -496,6 +497,7 @@ export const createQuarterlyExpenditureStatement = async (req, res) => {
       });
     }
   } catch (error) {
+    console.log(error);
     console.error(
       "Error in createQuarterlyExpenditureStatement:",
       error.message
