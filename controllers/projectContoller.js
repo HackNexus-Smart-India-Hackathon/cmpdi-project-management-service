@@ -27,8 +27,6 @@ export const createProject = async (req, res) => {
       adminId,
     } = req.body;
     if (
-      !adminName ||
-      !adminEmail1 ||
       !fundingSource ||
       !projectTitle ||
       !principalImplementingAgency ||
@@ -110,14 +108,15 @@ export const createProject = async (req, res) => {
             );
           }
 
-          await ProjectInvestigators.create(
-            {
-              projectId: project.id,
-              userId: user.id,
-            },
-            { transaction }
-          );
-          projectInvestigators.forEach(({ email }) => {
+          // await ProjectInvestigators.create(
+          //   {
+          //     projectId: project.id,
+          //     userId: user.id,
+          //   },
+          //   { transaction }
+          // );
+          projectInvestigators.forEach((email) => {
+            const username = email.split("@")[0];
             axios
               .post("http://localhost:8000/createUser", {
                 username,
@@ -149,14 +148,15 @@ export const createProject = async (req, res) => {
             });
         }
         for (let i = 0; i < projectInvestigators.length; i++) {
-          let investigator = ProjectInvestigators[i];
-          for (let j = 0; j < array.length; j++) {
+          let investigator = projectInvestigators[i];
+          for (let j = 0; j < projectInvestigators.length; j++) {
             if (j != i) {
+              const username = investigator.split("@")[0];
               axios
-                .post("localhost:8000/privateChat", {
-                  username: investigator.username,
-                  email: investigator.email,
-                  role: investigator.role,
+                .post("http://localhost:8000/privateChat", {
+                  username: username,
+                  email: investigator,
+                  role: "INVESTIGATOR",
                   projectId: String(project.id),
                   to: investigator[j],
                 })
