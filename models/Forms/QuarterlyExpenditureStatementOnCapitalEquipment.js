@@ -1,5 +1,6 @@
 import { DataTypes } from "sequelize";
 import { sequelize } from "../../config/db.config.js";
+import Project from "../project.js";
 
 const QuarterlyExpenditureStatementOnCapitalEquipment = sequelize.define(
   "QuarterlyExpenditureStatementOnCapitalEquipment",
@@ -14,7 +15,7 @@ const QuarterlyExpenditureStatementOnCapitalEquipment = sequelize.define(
       type: DataTypes.INTEGER,
       allowNull: false,
       references: {
-        model: "Project",
+        model: "project",
         key: "id",
       },
     },
@@ -67,7 +68,7 @@ const QuarterlyExpenditureStatementOnCapitalEquipment = sequelize.define(
     },
   },
   {
-    timestamps: true, // Retaining timestamps for records
+    timestamps: true,
   }
 );
 

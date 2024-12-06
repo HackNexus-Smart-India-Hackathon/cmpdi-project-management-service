@@ -1,5 +1,6 @@
 import { DataTypes } from "sequelize";
 import { sequelize } from "../../config/db.config.js";
+import Project from "../project.js";
 
 const RevisionCost = sequelize.define(
   "RevisionCost",
@@ -14,7 +15,7 @@ const RevisionCost = sequelize.define(
       type: DataTypes.INTEGER,
       allowNull: false,
       references: {
-        model: "Project",
+        model: "project",
         key: "id",
       },
     },

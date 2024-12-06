@@ -1,14 +1,8 @@
 import FundRequisition from "../models/Forms/FundRequisition.js";
 import ProjectCompletionReport from "../models/Forms/ProjectCompletionReport.js";
 import ProjectDurationExtension from "../models/Forms/ProjectDurationExtention.js";
-import {
-  QuarterlyExpenditureStatement,
-  FinancialDetail,
-} from "../models/Forms/QuarterlyExpenditureStatement.js";
-import {
-  QuarterlyExpenditureStatementOnCapitalEquipment,
-  EquipmentDetail,
-} from "../models/Forms/QuarterlyExpenditureStatementonCapitalEquipment.js";
+import QuarterlyExpenditureStatement from "../models/Forms/QuarterlyExpenditureStatement.js";
+import QuarterlyExpenditureStatementOnCapitalEquipment from "../models/Forms/QuarterlyExpenditureStatementonCapitalEquipment.js";
 import QuarterlyStatusReport from "../models/Forms/QuaterlyStatusReport.js";
 import RevisionCost from "../models/Forms/RevisionofProjectCost.js";
 
@@ -545,10 +539,7 @@ export const getQuarterlyExpenditureStatementById = async (req, res) => {
   }
 };
 
-export const getQuarterlyExpenditureStatementByProjectId = async (
-  req,
-  res
-) => {
+export const getQuarterlyExpenditureStatementByProjectId = async (req, res) => {
   const { projectId } = req.params;
 
   try {

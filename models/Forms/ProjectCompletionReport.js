@@ -1,5 +1,6 @@
 import { DataTypes } from "sequelize";
 import { sequelize } from "../../config/db.config.js";
+import Project from "../project.js";
 
 const ProjectCompletionReport = sequelize.define(
   "ProjectCompletionReport",

@@ -28,7 +28,7 @@ export const createProject = async (req, res) => {
     } = req.body;
     if (
       !adminName ||
-      !adminEmail ||
+      !adminEmail1 ||
       !fundingSource ||
       !projectTitle ||
       !principalImplementingAgency ||
