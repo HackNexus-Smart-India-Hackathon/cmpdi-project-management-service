@@ -25,31 +25,19 @@ const QuarterlyExpenditureStatementOnCapitalEquipment = sequelize.define(
     },
     equipmentName: {
       type: DataTypes.STRING,
-      allowNull: false,
-      validate: {
-        notEmpty: true,
-      },
+      allowNull: true,
     },
     supplierName: {
       type: DataTypes.STRING,
-      allowNull: false,
-      validate: {
-        notEmpty: true,
-      },
+      allowNull: true,
     },
     units: {
       type: DataTypes.INTEGER,
-      allowNull: false,
-      validate: {
-        min: 1,
-      },
+      allowNull: true,
     },
     unitValue: {
       type: DataTypes.FLOAT,
-      allowNull: false,
-      validate: {
-        min: 0,
-      },
+      allowNull: true,
     },
     totalValue: {
       type: DataTypes.FLOAT,
@@ -61,10 +49,7 @@ const QuarterlyExpenditureStatementOnCapitalEquipment = sequelize.define(
     },
     progressiveExpenditure: {
       type: DataTypes.FLOAT,
-      allowNull: false,
-      validate: {
-        min: 0,
-      },
+      allowNull: true,
     },
   },
   {

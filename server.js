@@ -2,7 +2,6 @@
 import app from "./app.js";
 import Project from "./models/project.js";
 import User from "./models/User.js";
-import ProjectInvestigators from "./models/ProjectInvestigators.js";
 import FundRequisition from "./models/Forms/FundRequisition.js";
 import ProjectCompletionReport from "./models/Forms/ProjectCompletionReport.js";
 import ProjectDurationExtension from "./models/Forms/ProjectDurationExtention.js";
