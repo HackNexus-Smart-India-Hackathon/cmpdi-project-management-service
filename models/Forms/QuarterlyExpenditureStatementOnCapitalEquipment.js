@@ -1,27 +1,14 @@
 import { DataTypes } from "sequelize";
 import { sequelize } from "../../config/db.config.js";
-import Project from "../project.js";
 
-const QuarterlyExpenditureStatementOnCapitalEquipment = sequelize.define(
-  "QuarterlyExpenditureStatementOnCapitalEquipment",
+const EquipmentDetail = sequelize.define(
+  "EquipmentDetail",
   {
     id: {
       type: DataTypes.INTEGER,
       allowNull: false,
       autoIncrement: true,
       primaryKey: true,
-    },
-    projectId: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      references: {
-        model: "Project",
-        key: "id",
-      },
-    },
-    quarterEnding: {
-      type: DataTypes.DATE,
-      allowNull: false,
     },
     equipmentName: {
       type: DataTypes.STRING,
@@ -66,10 +53,55 @@ const QuarterlyExpenditureStatementOnCapitalEquipment = sequelize.define(
         min: 0,
       },
     },
+    statementId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: "QuarterlyExpenditureStatementOnCapitalEquipments",
+        key: "id",
+      },
+    },
+  },
+  {
+    timestamps: false,
+  }
+);
+
+const QuarterlyExpenditureStatementOnCapitalEquipment = sequelize.define(
+  "QuarterlyExpenditureStatementOnCapitalEquipment",
+  {
+    id: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      autoIncrement: true,
+      primaryKey: true,
+    },
+    projectId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: "Project",
+        key: "id",
+      },
+    },
+    quarterEnding: {
+      type: DataTypes.DATE,
+      allowNull: false,
+    },
   },
   {
     timestamps: true,
   }
 );
 
+QuarterlyExpenditureStatementOnCapitalEquipment.hasMany(EquipmentDetail, {
+  foreignKey: "statementId",
+  as: "equipmentDetails",
+});
+EquipmentDetail.belongsTo(QuarterlyExpenditureStatementOnCapitalEquipment, {
+  foreignKey: "statementId",
+  as: "statement",
+});
+
+export { EquipmentDetail, QuarterlyExpenditureStatementOnCapitalEquipment };
 export default QuarterlyExpenditureStatementOnCapitalEquipment;

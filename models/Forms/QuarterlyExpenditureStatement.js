@@ -1,6 +1,34 @@
 import { DataTypes } from "sequelize";
 import { sequelize } from "../../config/db.config.js";
-import Project from "../project.js";
+
+
+const FinancialDetail = sequelize.define("FinancialDetail", {
+  category: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  totalApproved: {
+    type: DataTypes.FLOAT,
+    allowNull: true,
+    validate: {
+      min: 0,
+    },
+  },
+  sanctionedProvision: {
+    type: DataTypes.FLOAT,
+    allowNull: true,
+    validate: {
+      min: 0,
+    },
+  },
+  fundsAdvanced: {
+    type: DataTypes.FLOAT,
+    allowNull: true,
+    validate: {
+      min: 0,
+    },
+  },
+});
 
 const QuarterlyExpenditureStatement = sequelize.define(
   "QuarterlyExpenditureStatement",
@@ -19,48 +47,10 @@ const QuarterlyExpenditureStatement = sequelize.define(
         key: "id",
       },
     },
+
     quarterEnding: {
       type: DataTypes.DATE,
       allowNull: false,
-    },
-    fundsAdvanced: {
-      type: DataTypes.FLOAT,
-      allowNull: false,
-      validate: {
-        min: 0,
-      },
-    },
-    expenditureToDate: {
-      type: DataTypes.FLOAT,
-      allowNull: false,
-      validate: {
-        min: 0,
-      },
-    },
-    unspentBalance: {
-      type: DataTypes.FLOAT,
-      allowNull: false,
-      validate: {
-        min: 0,
-      },
-    },
-    category: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    totalApproved: {
-      type: DataTypes.FLOAT,
-      allowNull: true,
-      validate: {
-        min: 0,
-      },
-    },
-    sanctionedProvision: {
-      type: DataTypes.FLOAT,
-      allowNull: true,
-      validate: {
-        min: 0,
-      },
     },
     previousYear: {
       type: DataTypes.FLOAT,
@@ -83,10 +73,34 @@ const QuarterlyExpenditureStatement = sequelize.define(
         min: 0,
       },
     },
+    expenditureToDate: {
+      type: DataTypes.FLOAT,
+      allowNull: false,
+      validate: {
+        min: 0,
+      },
+    },
+    unspentBalance: {
+      type: DataTypes.FLOAT,
+      allowNull: false,
+      validate: {
+        min: 0,
+      },
+    },
   },
   {
     timestamps: true,
   }
 );
 
+QuarterlyExpenditureStatement.hasMany(FinancialDetail, {
+  foreignKey: "statementId",
+  as: "financialDetails",
+});
+FinancialDetail.belongsTo(QuarterlyExpenditureStatement, {
+  foreignKey: "statementId",
+  as: "statement",
+});
+
+export { FinancialDetail, QuarterlyExpenditureStatement };
 export default QuarterlyExpenditureStatement;
