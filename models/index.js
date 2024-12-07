@@ -3,7 +3,7 @@ import FundRequisition from "./models/FundRequisition.js";
 import ProjectCompletionReport from "./Forms/ProjectCompletionReport.js";
 import ProjectDurationExtension from "./Forms/ProjectDurationExtention.js";
 import QuarterlyExpenditureStatement from "./Forms/QuarterlyExpenditureStatement.js";
-import QuarterlyExpenditureStatementOnCapitalEquipment from "./Forms/QuarterlyExpenditureStatementonCapitalEquipment.js";
+import { QuarterlyExpenditureStatementOnCapitalEquipment } from "./Forms/QuarterlyExpenditureStatementOnCapitalEquipment.js";
 import QuarterlyStatusReport from "./Forms/QuaterlyStatusReport.js";
 import RevisionCost from "./Forms/RevisionofProjectCost.js";
 

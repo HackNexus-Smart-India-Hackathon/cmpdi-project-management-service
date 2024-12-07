@@ -5,10 +5,25 @@ import {
   sendInvitationEmail,
   sendRegistrationLink,
 } from "../utils/emailSender.js";
-import bcrypt from "bcrypt";
+import argon2 from "argon2";
 import { v4 as uuidv4 } from "uuid";
 import axios from "axios";
 import { Op } from "sequelize";
+
+async function encryptPassword(password) {
+  try {
+    const hashedPassword = await argon2.hash(password, {
+      type: argon2.argon2id,
+      memoryCost: 2 ** 16,
+      timeCost: 3,
+      parallelism: 1,
+    });
+    return hashedPassword;
+  } catch (err) {
+    console.error("Error hashing password:", err);
+    throw err;
+  }
+}
 
 export const createProject = async (req, res) => {
   try {
@@ -96,7 +111,7 @@ export const createProject = async (req, res) => {
           } else {
             const registrationLink = `https://your-portal.com/register?ref=${uuidv4()}`;
             await sendRegistrationLink(email, registrationLink);
-            const hashedPassword = await bcrypt.hash(uuidv4(), 10);
+            const hashedPassword = encryptPassword("123456");
             user = await User.create(
               {
                 email,
@@ -108,13 +123,6 @@ export const createProject = async (req, res) => {
             );
           }
 
-          // await ProjectInvestigators.create(
-          //   {
-          //     projectId: project.id,
-          //     userId: user.id,
-          //   },
-          //   { transaction }
-          // );
           projectInvestigators.forEach((email) => {
             const username = email.split("@")[0];
             axios

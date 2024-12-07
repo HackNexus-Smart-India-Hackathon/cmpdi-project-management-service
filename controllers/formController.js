@@ -1,8 +1,14 @@
 import FundRequisition from "../models/Forms/FundRequisition.js";
 import ProjectCompletionReport from "../models/Forms/ProjectCompletionReport.js";
 import ProjectDurationExtension from "../models/Forms/ProjectDurationExtention.js";
-import QuarterlyExpenditureStatement from "../models/Forms/QuarterlyExpenditureStatement.js";
-import QuarterlyExpenditureStatementOnCapitalEquipment from "../models/Forms/QuarterlyExpenditureStatementonCapitalEquipment.js";
+import {
+  QuarterlyExpenditureStatement,
+  FinancialDetail,
+} from "../models/Forms/QuarterlyExpenditureStatement.js";
+import {
+  QuarterlyExpenditureStatementOnCapitalEquipment,
+  EquipmentDetail,
+} from "../models/Forms/QuarterlyExpenditureStatementOnCapitalEquipment.js"; // Ensure paths to models are correct
 import QuarterlyStatusReport from "../models/Forms/QuaterlyStatusReport.js";
 import RevisionCost from "../models/Forms/RevisionofProjectCost.js";
 
@@ -416,29 +422,27 @@ export const getProjectDurationExtensionById = async (req, res) => {
 //Quaterly Expenditure statement
 
 export const createQuarterlyExpenditureStatement = async (req, res) => {
+  const transaction =
+    await QuarterlyExpenditureStatement.sequelize.transaction();
+
   try {
     const {
       projectId,
       quarterEnding,
-      fundsAdvanced,
       expenditureToDate,
       unspentBalance,
-      category,
-      totalApproved,
-      sanctionedProvision,
-      previousYear,
-      previousQuarter,
-      currentQuarter,
+      previousYear = 0,
+      previousQuarter = 0,
+      currentQuarter = 0,
+      financialDetails,
     } = req.body;
 
     const missingFields = [];
     [
       "projectId",
       "quarterEnding",
-      "fundsAdvanced",
       "expenditureToDate",
       "unspentBalance",
-      "category",
     ].forEach((field) => {
       if (!req.body[field]) missingFields.push(field);
     });
@@ -454,57 +458,61 @@ export const createQuarterlyExpenditureStatement = async (req, res) => {
       });
     }
 
-    const transaction =
-      await QuarterlyExpenditureStatement.sequelize.transaction();
-
-    try {
-      const statement = await QuarterlyExpenditureStatement.create(
-        {
-          projectId,
-          quarterEnding,
-          fundsAdvanced,
-          expenditureToDate,
-          unspentBalance,
-          category,
-          totalApproved: totalApproved || 0,
-          sanctionedProvision: sanctionedProvision || 0,
-          previousYear: previousYear || 0,
-          previousQuarter: previousQuarter || 0,
-          currentQuarter: currentQuarter || 0,
-        },
-        { transaction }
-      );
-
-      await transaction.commit();
-
-      return res.status(201).json({
-        success: true,
-        message: "Quarterly Expenditure Statement created successfully",
-        data: { id: statement.id },
-      });
-    } catch (error) {
-      console.log(error);
-      await transaction.rollback();
-      console.error(
-        "Error in createQuarterlyExpenditureStatement:",
-        error.message
-      );
-      return res.status(500).json({
+    if (!Array.isArray(financialDetails) || financialDetails.length === 0) {
+      return res.status(400).json({
         success: false,
         message:
-          "An error occurred while creating the Quarterly Expenditure Statement",
-        details: error.message,
+          "Financial details are required and should be a non-empty array",
       });
     }
+
+    const statement = await QuarterlyExpenditureStatement.create(
+      {
+        projectId,
+        quarterEnding,
+        expenditureToDate,
+        unspentBalance,
+        previousYear,
+        previousQuarter,
+        currentQuarter,
+      },
+      { transaction }
+    );
+
+    const financialDetailsData = financialDetails.map((detail) => ({
+      ...detail,
+      statementId: statement.id,
+    }));
+
+    await FinancialDetail.bulkCreate(financialDetailsData, { transaction });
+
+    await transaction.commit();
+
+    return res.status(201).json({
+      success: true,
+      message: "Quarterly Expenditure Statement created successfully",
+      data: {
+        id: statement.id,
+        financialDetails: financialDetailsData.map((detail) => ({
+          category: detail.category,
+          totalApproved: detail.totalApproved,
+          sanctionedProvision: detail.sanctionedProvision,
+          fundsAdvanced: detail.fundsAdvanced,
+        })),
+      },
+    });
   } catch (error) {
-    console.log(error);
+    if (transaction) await transaction.rollback();
+
     console.error(
       "Error in createQuarterlyExpenditureStatement:",
       error.message
     );
+
     return res.status(500).json({
       success: false,
-      message: "An internal server error occurred",
+      message:
+        "An error occurred while creating the Quarterly Expenditure Statement",
       details: error.message,
     });
   }
@@ -616,18 +624,18 @@ export const createQuarterlyExpenditureStatementOnCapitalEquipment = async (
           },
           { transaction }
         );
+
       const equipmentPromises = equipmentDetails.map((detail) => {
-        return QuarterlyExpenditureStatementOnCapitalEquipment.create(
+        return EquipmentDetail.create(
           {
+            statementId: statement.id,
             equipmentName: detail.equipmentName,
             supplierName: detail.supplierName,
             units: detail.units,
             unitValue: detail.unitValue,
-            totalValue: detail.totalValue || 0,
+            totalValue: detail.totalValue || detail.units * detail.unitValue, // Calculate if not provided
             approvedCost: detail.approvedCost || 0,
             progressiveExpenditure: detail.progressiveExpenditure,
-            quarterEnding: statement.quarterEnding,
-            projectId: statement.projectId,
           },
           { transaction }
         );
@@ -635,12 +643,13 @@ export const createQuarterlyExpenditureStatementOnCapitalEquipment = async (
 
       await Promise.all(equipmentPromises);
 
+      // Commit transaction
       await transaction.commit();
 
       return res.status(201).json({
         success: true,
         message:
-          "Quarterly Expenditure Statement on Capital Equipment created successfully",
+          "Quarterly Expenditure Statement on Capital Equipment created successfully.",
         statementId: statement.id,
       });
     } catch (error) {
@@ -652,7 +661,7 @@ export const createQuarterlyExpenditureStatementOnCapitalEquipment = async (
       return res.status(500).json({
         success: false,
         message:
-          "An error occurred while creating the Quarterly Expenditure Statement on Capital Equipment",
+          "An error occurred while creating the Quarterly Expenditure Statement on Capital Equipment.",
         error: error.message,
       });
     }
@@ -660,7 +669,7 @@ export const createQuarterlyExpenditureStatementOnCapitalEquipment = async (
     console.error("Transaction error:", error.message);
     return res.status(500).json({
       success: false,
-      message: "An internal server error occurred",
+      message: "An internal server error occurred.",
       error: error.message,
     });
   }
