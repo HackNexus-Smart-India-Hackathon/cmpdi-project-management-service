@@ -529,6 +529,12 @@ export const getQuarterlyExpenditureStatementById = async (req, res) => {
         success: false,
         message: `No Quarterly Expenditure Statement found with ID: ${formId}`,
       });
+    } else {
+      const financialDetails = await FinancialDetail.findAll({
+        where: { statementId: formId },
+      });
+
+      statement.dataValues.financialDetails = financialDetails;
     }
 
     return res.status(200).json({
@@ -725,6 +731,12 @@ export const getQuarterlyExpenditureStatementOnCapitalEquipmentById = async (
         success: false,
         message: `No Quarterly Expenditure Statement on Capital Equipment found with ID: ${formId}`,
       });
+    } else {
+      const equipmentDetails = await EquipmentDetail.findAll({
+        where: { statementId: formId },
+      });
+
+      statement.dataValues.equipmentDetails = equipmentDetails;
     }
 
     return res.status(200).json({

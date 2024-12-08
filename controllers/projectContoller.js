@@ -6,7 +6,7 @@ import {
   sendRegistrationLink,
 } from "../utils/emailSender.js";
 import argon2 from "argon2";
-import { v4 as uuidv4 } from "uuid";
+import { stringify, v4 as uuidv4 } from "uuid";
 import axios from "axios";
 import { Op } from "sequelize";
 
@@ -111,7 +111,7 @@ export const createProject = async (req, res) => {
           } else {
             const registrationLink = `https://your-portal.com/register?ref=${uuidv4()}`;
             await sendRegistrationLink(email, registrationLink);
-            const hashedPassword = encryptPassword("123456");
+            const hashedPassword = await encryptPassword("123456");
             user = await User.create(
               {
                 email,
@@ -126,7 +126,7 @@ export const createProject = async (req, res) => {
           projectInvestigators.forEach((email) => {
             const username = email.split("@")[0];
             axios
-              .post("http://localhost:8000/createUser", {
+              .post(`${process.env.CHAT_ROUTE}/createUser`, {
                 username,
                 email,
                 role: "INVESTIGATOR",
@@ -141,8 +141,8 @@ export const createProject = async (req, res) => {
               });
           });
           axios
-            .post("http://localhost:8000/createUser", {
-              username: adminName,
+            .post(`${process.env.CHAT_ROUTE}/createUser`, {
+              username: adminUser.username,
               email: adminEmail1,
               role: "ADMIN",
               projectId: String(project.id),
@@ -161,7 +161,7 @@ export const createProject = async (req, res) => {
             if (j != i) {
               const username = investigator.split("@")[0];
               axios
-                .post("http://localhost:8000/privateChat", {
+                .post(`${process.env.CHAT_ROUTE}/privateChat`, {
                   username: username,
                   email: investigator,
                   role: "INVESTIGATOR",
@@ -292,6 +292,83 @@ export const getInvestigatorsByProjectId = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "An error occurred while retrieving investigators",
+      details: error.message,
+    });
+  }
+};
+
+export const getProjectsByInvestigatorEmail = async (req, res) => {
+  const { email } = req.query;
+
+  if (!email) {
+    return res.status(400).json({
+      success: false,
+      message: "'email' is required to fetch the projects.",
+    });
+  }
+
+  try {
+    const projects = await Project.findAll({
+      where: {
+        projectInvestigatorEmail: {
+          [Op.contains]: [email],
+        },
+      },
+    });
+
+    if (projects.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: `No projects found for investigator email: ${email}`,
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: projects,
+    });
+  } catch (error) {
+    console.error(
+      "Error fetching projects by investigator email:",
+      error.message
+    );
+    return res.status(500).json({
+      success: false,
+      message: "An error occurred while fetching the projects",
+      error: error.message,
+    });
+  }
+};
+export const getProjectById = async (req, res) => {
+  try {
+    const { projectId } = req.params;
+
+    if (!projectId) {
+      return res.status(400).json({
+        success: false,
+        message: "Project ID is required",
+      });
+    }
+
+    const project = await Project.findByPk(projectId);
+
+    if (!project) {
+      return res.status(404).json({
+        success: false,
+        message: "Project not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Project retrieved successfully",
+      project,
+    });
+  } catch (error) {
+    console.error("Error in getProjectById:", error.message);
+    res.status(500).json({
+      success: false,
+      message: "An error occurred while retrieving the project",
       details: error.message,
     });
   }
