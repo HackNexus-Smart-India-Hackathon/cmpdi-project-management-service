@@ -8,7 +8,8 @@ import {
 import argon2 from "argon2";
 import { stringify, v4 as uuidv4 } from "uuid";
 import axios from "axios";
-import { Op } from "sequelize";
+import { json, Op } from "sequelize";
+import Deadline from "../models/Deadline.js";
 
 async function encryptPassword(password) {
   try {
@@ -115,7 +116,7 @@ export const createProject = async (req, res) => {
             user = await User.create(
               {
                 email,
-                username: email,
+                username: email, //? to add name
                 password_hash: hashedPassword,
                 role: "investigator",
               },
@@ -372,3 +373,97 @@ export const getProjectById = async (req, res) => {
     });
   }
 };
+
+export const addMilestones = async (req, res) => {
+  try {
+    const { projectId } = req.params;
+    const { milestones } = req.body;
+
+    // Validate required fields
+    if (!milestones || !projectId) {
+      return res.status(400).json({
+        message: "Missing some fields",
+      });
+    }
+    const project = await Project.findByPk(projectId)
+    if (!project) {
+      return res.status(404).json({
+        msg: "Project not found",
+      });
+    }
+    // Start transaction
+    const transaction = await Deadline.sequelize.transaction();
+
+    try {
+      if (Array.isArray(milestones)) {
+        for (const milestone of milestones) {
+          // Create each milestone within the transaction
+          await Deadline.create(
+            {
+              startDate : milestone.startDate,
+              description: milestone.description,
+              deadline: milestone.deadline,
+              investigators_email: project.projectInvestigatorEmail,
+              projectId,
+            },
+            { transaction }
+          );
+        }
+      }
+
+      await transaction.commit();
+
+      res.status(201).json({
+        message: "Milestones added successfully",
+      });
+    } catch (error) {
+
+      await transaction.rollback();
+      console.error("Transaction error:", error);
+      res.status(500).json({
+        message: "Failed to add milestones",
+        error: error.message,
+      });
+    }
+  } catch (error) {
+    console.error("Error:", error);
+    res.status(500).json({
+      message: "An internal server error occurred",
+      error: error.message,
+    });
+  }
+};
+
+export const getMilestones = async (req, res)=>{
+  try {
+    const { projectId } = req.params;
+
+    // Validate required fields
+    if (!projectId) {
+      return res.status(400).json({
+        message: "Missing some fields",
+      });
+    }
+    const project = await Project.findByPk(projectId)
+    if (!project) {
+      return res.status(404).json({
+        msg: "Project not found",
+      });
+    }
+    const getNotification  = await Deadline.findAll({ 
+      where : {
+        projectId
+      }
+    })
+    if (!getNotification) {
+      return res.status(400).json({err : "no milestones set"})
+    }
+    return res.status(400).json({notification : getNotification})
+  } catch (error) {
+    console.error("Error:", error);
+    res.status(500).json({
+      message: "An internal server error occurred",
+      error: error.message,
+    });
+  }
+}

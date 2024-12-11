@@ -5,6 +5,8 @@ import {
   getInvestigatorsByProjectId,
   getProjectsByInvestigatorEmail,
   getProjectById,
+  addMilestones,
+  getMilestones
 } from "../controllers/projectContoller.js";
 
 const router = express.Router();
@@ -14,4 +16,6 @@ router.get("/admin/:adminId/projects", getProjectsByAdmin);
 router.get("/project/:projectId/investigators", getInvestigatorsByProjectId);
 router.get("/investigator/projects", getProjectsByInvestigatorEmail);
 router.get("/project/:projectId", getProjectById); 
+router.post("/:projectId/addTimeline" , addMilestones);
+router.post('/:projectId/getMilestones' , getMilestones);
 export default router;
