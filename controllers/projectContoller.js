@@ -140,21 +140,20 @@ export const createProject = async (req, res) => {
                 console.error(error);
               });
           });
-          axios
-            .post(`${process.env.CHAT_ROUTE}/createUser`, {
-              username: adminUser.username,
+        }
+        axios
+            .post(`${process.env.CHAT_ROUTE}/addAdmin`, {
               email: adminEmail1,
+              username: adminUser.username,
               role: "ADMIN",
               projectId: String(project.id),
             })
             .then((created) => {
-              if (created == "User created successfully")
                 console.log("Chat created");
             })
             .catch((error) => {
               console.error(error);
             });
-        }
         for (let i = 0; i < projectInvestigators.length; i++) {
           let investigator = projectInvestigators[i];
           for (let j = 0; j < projectInvestigators.length; j++) {
@@ -162,7 +161,7 @@ export const createProject = async (req, res) => {
               const username = investigator.split("@")[0];
               axios
                 .post(`${process.env.CHAT_ROUTE}/privateChat`, {
-                  username: username,
+                  name: username,
                   email: investigator,
                   role: "INVESTIGATOR",
                   projectId: String(project.id),
