@@ -431,9 +431,7 @@ export const createQuarterlyExpenditureStatement = async (req, res) => {
       quarterEnding,
       expenditureToDate,
       unspentBalance,
-      previousYear = 0,
-      previousQuarter = 0,
-      currentQuarter = 0,
+      fundsAdvanced,
       financialDetails,
     } = req.body;
 
@@ -441,6 +439,7 @@ export const createQuarterlyExpenditureStatement = async (req, res) => {
     [
       "projectId",
       "quarterEnding",
+      "fundsAdvanced",
       "expenditureToDate",
       "unspentBalance",
     ].forEach((field) => {
@@ -472,9 +471,7 @@ export const createQuarterlyExpenditureStatement = async (req, res) => {
         quarterEnding,
         expenditureToDate,
         unspentBalance,
-        previousYear,
-        previousQuarter,
-        currentQuarter,
+        fundsAdvanced,
       },
       { transaction }
     );
@@ -498,6 +495,9 @@ export const createQuarterlyExpenditureStatement = async (req, res) => {
           totalApproved: detail.totalApproved,
           sanctionedProvision: detail.sanctionedProvision,
           fundsAdvanced: detail.fundsAdvanced,
+          currentQuarter: detail.currentQuarter,
+          previousQuarter: detail.previousQuarter,
+          previousYear: detail.previousYear,
         })),
       },
     });
