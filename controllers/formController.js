@@ -17,7 +17,7 @@ import User from "../models/User.js";
 export const createFundRequisition = async (req, res) => {
   try {
     const { projectId, yearPeriod, funds } = req.body;
-    console.log('projectId',projectId)
+    console.log("projectId", projectId);
     if (!projectId || !yearPeriod || !funds) {
       return res.status(400).json({
         success: false,
