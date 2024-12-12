@@ -37,7 +37,8 @@ export const createProject = async (req, res) => {
       projectInvestigators,
       startDate,
       scheduleCompletionDate,
-      projectOutlay,
+      principalOutlay,
+      subOutlay,
       status,
       adminId,
     } = req.body;
@@ -48,7 +49,8 @@ export const createProject = async (req, res) => {
       !projectInvestigators ||
       !startDate ||
       !scheduleCompletionDate ||
-      !projectOutlay ||
+      !principalOutlay ||
+      !subOutlay ||
       !status ||
       !adminId
     ) {
@@ -78,8 +80,8 @@ export const createProject = async (req, res) => {
       adminEmail1 = adminUser.email;
 
       const adminEmail = adminUser.email;
-      // console.log("adminEmail", adminEmail);
-      // console.log("projectInvestigators", projectInvestigators);
+      console.log("adminEmail", adminEmail);
+      console.log("projectInvestigators", projectInvestigators);
 
       const project = await Project.create(
         {
@@ -91,7 +93,8 @@ export const createProject = async (req, res) => {
           subImplementingAgencies,
           startDate,
           scheduleCompletionDate,
-          projectOutlay,
+          principalOutlay,
+          subOutlay,
           status,
           adminEmail,
           projectInvestigatorEmail: projectInvestigators,
@@ -450,7 +453,7 @@ export const getMilestones = async (req, res)=>{
         msg: "Project not found",
       });
     }
-    const getNotification  = await Deadline.findAll({ 
+    const getNotification  = await Deadline.findAll({
       where : {
         projectId
       }
