@@ -17,5 +17,5 @@ router.get("/project/:projectId/investigators", getInvestigatorsByProjectId);
 router.get("/investigator/projects", getProjectsByInvestigatorEmail);
 router.get("/project/:projectId", getProjectById); 
 router.post("/:projectId/addTimeline" , addMilestones);
-router.post('/:projectId/getMilestones' , getMilestones);
+router.get("/:projectId/getMilestones", getMilestones);
 export default router;

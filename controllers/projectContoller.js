@@ -461,7 +461,7 @@ export const getMilestones = async (req, res)=>{
     if (!getNotification) {
       return res.status(400).json({err : "no milestones set"})
     }
-    return res.status(400).json({notification : getNotification})
+    return res.status(200).json({ notification: getNotification });
   } catch (error) {
     console.error("Error:", error);
     res.status(500).json({
