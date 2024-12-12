@@ -27,11 +27,11 @@ const Project = sequelize.define(
       allowNull: true,
     },
     principalImplementingAgency: {
-      type: DataTypes.STRING,
+      type: DataTypes.JSON,
       allowNull: false,
     },
     subImplementingAgencies: {
-      type: DataTypes.ARRAY(DataTypes.STRING),
+      type: DataTypes.ARRAY(DataTypes.JSON),
       allowNull: true,
     },
     adminEmail: {
@@ -50,7 +50,11 @@ const Project = sequelize.define(
       type: DataTypes.DATE,
       allowNull: false,
     },
-    projectOutlay: {
+    principalOutlay: {
+      type: DataTypes.JSON,
+      allowNull: true,
+    },
+    subOutlay: {
       type: DataTypes.JSON,
       allowNull: true,
     },

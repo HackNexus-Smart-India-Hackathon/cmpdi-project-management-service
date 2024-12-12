@@ -36,7 +36,8 @@ export const createProject = async (req, res) => {
       projectInvestigators,
       startDate,
       scheduleCompletionDate,
-      projectOutlay,
+      principalOutlay,
+      subOutlay,
       status,
       adminId,
     } = req.body;
@@ -47,7 +48,8 @@ export const createProject = async (req, res) => {
       !projectInvestigators ||
       !startDate ||
       !scheduleCompletionDate ||
-      !projectOutlay ||
+      !principalOutlay ||
+      !subOutlay ||
       !status ||
       !adminId
     ) {
@@ -90,7 +92,8 @@ export const createProject = async (req, res) => {
           subImplementingAgencies,
           startDate,
           scheduleCompletionDate,
-          projectOutlay,
+          principalOutlay,
+          subOutlay,
           status,
           adminEmail,
           projectInvestigatorEmail: projectInvestigators,
@@ -123,62 +126,62 @@ export const createProject = async (req, res) => {
             );
           }
 
-          projectInvestigators.forEach((email) => {
-            const username = email.split("@")[0];
-            axios
-              .post("http://localhost:8000/createUser", {
-                username,
-                email,
-                role: "INVESTIGATOR",
-                projectId: String(project.id),
-              })
-              .then((created) => {
-                if (created == "User created successfully")
-                  console.log("Chat created");
-              })
-              .catch((error) => {
-                console.error(error);
-              });
-          });
-          axios
-            .post("http://localhost:8000/createUser", {
-              username: adminName,
-              email: adminEmail1,
-              role: "ADMIN",
-              projectId: String(project.id),
-            })
-            .then((created) => {
-              if (created == "User created successfully")
-                console.log("Chat created");
-            })
-            .catch((error) => {
-              console.error(error);
-            });
+          // projectInvestigators.forEach((email) => {
+          //   const username = email.split("@")[0];
+          //   axios
+          //     .post("http://localhost:8000/createUser", {
+          //       username,
+          //       email,
+          //       role: "INVESTIGATOR",
+          //       projectId: String(project.id),
+          //     })
+          //     .then((created) => {
+          //       if (created == "User created successfully")
+          //         console.log("Chat created");
+          //     })
+          //     .catch((error) => {
+          //       console.error(error);
+          //     });
+          // });
+          // axios
+          //   .post("http://localhost:8000/createUser", {
+          //     username: adminName,
+          //     email: adminEmail1,
+          //     role: "ADMIN",
+          //     projectId: String(project.id),
+          //   })
+          //   .then((created) => {
+          //     if (created == "User created successfully")
+          //       console.log("Chat created");
+          //   })
+          //   .catch((error) => {
+          //     console.error(error);
+          //   });
         }
-        for (let i = 0; i < projectInvestigators.length; i++) {
-          let investigator = projectInvestigators[i];
-          for (let j = 0; j < projectInvestigators.length; j++) {
-            if (j != i) {
-              const username = investigator.split("@")[0];
-              axios
-                .post("http://localhost:8000/privateChat", {
-                  username: username,
-                  email: investigator,
-                  role: "INVESTIGATOR",
-                  projectId: String(project.id),
-                  to: investigator[j],
-                })
-                .then((created) => {
-                  if (created == "private chat established")
-                    console.log("Chat created");
-                  console.log(created);
-                })
-                .catch((err) => {
-                  console.log(err);
-                });
-            }
-          }
-        }
+        //   for (let i = 0; i < projectInvestigators.length; i++) {
+        //     let investigator = projectInvestigators[i];
+        //     for (let j = 0; j < projectInvestigators.length; j++) {
+        //       if (j != i) {
+        //         const username = investigator.split("@")[0];
+        //         axios
+        //           .post("http://localhost:8000/privateChat", {
+        //             username: username,
+        //             email: investigator,
+        //             role: "INVESTIGATOR",
+        //             projectId: String(project.id),
+        //             to: investigator[j],
+        //           })
+        //           .then((created) => {
+        //             if (created == "private chat established")
+        //               console.log("Chat created");
+        //             console.log(created);
+        //           })
+        //           .catch((err) => {
+        //             console.log(err);
+        //           });
+        //       }
+        //     }
+        //   }
       }
 
       await project.save({ transaction });
