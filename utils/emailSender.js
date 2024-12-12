@@ -32,6 +32,37 @@ export const sendInvitationEmail = async (email, projectTitle) => {
   }
 };
 
+export const sendDeadlineMail= async (email, projectId ,milestone) => {
+  try {
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: "cmpdisih@gmail.com",
+        pass: "fmqpnyrrwnlwpukw",
+      },
+    });
+
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: `You are running behind the deadline for your project`,
+      html: `
+        <p>Dear Investigator,</p>
+        <p>You have been invited missing the following milestonre ${milestone}</p>
+      `,
+    };
+
+    await transporter.sendMail(mailOptions);
+    console.log(`Deadline email sent to ${email}`);
+  } catch (error) {
+    console.error(
+      `Failed to send Deadline email to ${email}: ${error.message}`
+    );
+    throw new Error("Failed to send invitation email");
+  }
+};
+
+
 export const sendRegistrationLink = async (email, name, registrationLink) => {
   try {
     const transporter = nodemailer.createTransport({

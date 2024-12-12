@@ -29,6 +29,10 @@ const FundRequisition = sequelize.define(
       allowNull: false,
       defaultValue: {},
     },
+    status :  {
+      type : DataTypes.ENUM(['APPROVED' , 'UPDATED' , 'HOLD']),
+      defaultValue : 'HOLD'
+    }
   },
   {
     timestamps: true,

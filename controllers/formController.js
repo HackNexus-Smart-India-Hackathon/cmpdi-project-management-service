@@ -11,6 +11,7 @@ import {
 } from "../models/Forms/QuarterlyExpenditureStatementOnCapitalEquipment.js"; // Ensure paths to models are correct
 import QuarterlyStatusReport from "../models/Forms/QuaterlyStatusReport.js";
 import RevisionCost from "../models/Forms/RevisionofProjectCost.js";
+import User from "../models/User.js";
 
 //Fund Requisition
 export const createFundRequisition = async (req, res) => {
@@ -1030,3 +1031,103 @@ export const getRevisionCostById = async (req, res) => {
     });
   }
 };
+
+
+export const formStatus = async (req, res) => {
+  try {
+    const { adminId, formId, approval } = req.body
+    if (!adminId || !formId || !approval)
+      return res.status(400).json({ err: "admin or form not found" })
+
+    const adminUser = await User.findByPk(adminId);
+    if (!adminUser) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Admin not found" });
+    }
+    try {
+      const form = await FundRequisition.findByPk(formId)
+
+      if (!form)
+        return res.status(400).json({ message: "form not found" })
+      try {
+        const transaction = await FundRequisition.sequelize.transaction()
+
+        try {
+          await form.update({
+            status : approval
+          }, { transaction })
+
+          await transaction.commit();
+
+          return res.status(400).json({ message: "transaction completed" })
+        } catch (error) {
+          await transaction.rollback()
+          console.error(error)
+          return res.status(500).json({ message: "Internal Server Error" })
+        }
+
+      } catch (error) {
+        console.error(error)
+        return res.status(500).json({ message: "Internal Server Error" })
+      }
+
+    } catch (errorForm) {
+      console.error(errorForm)
+      return res.status(500).json({ message: "Internal Server Error" })
+    }
+  } catch (error) {
+    console.error(error)
+    return res.status(500).json({ message: "Internal Server Error" })
+  }
+}
+export const updateForm = async (req, res) => {
+  try {
+    const { adminId, formId, yearPeriod, funds } = req.body
+    if (!adminId || !formId || !yearPeriod || !funds)
+      return res.status(400).json({ err: "admin or form not found" })
+
+    const adminUser = await User.findByPk(adminId);
+    if (!adminUser) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Admin not found" });
+    }
+    try {
+      const form = await FundRequisition.findByPk(formId)
+
+      if (!form)
+        return res.status(400).json({ message: "form not found" })
+      try {
+        const transaction = await FundRequisition.sequelize.transaction()
+
+        try {
+          await form.update({
+            yearPeriod,
+            funds
+          }, { transaction })
+
+          await transaction.commit();
+
+          return res.status(400).json({ message: "transaction completed" })
+        } catch (error) {
+          await transaction.rollback()
+          console.error(error)
+          return res.status(500).json({ message: "Internal Server Error" })
+        }
+
+      } catch (error) {
+        console.error(error)
+        return res.status(500).json({ message: "Internal Server Error" })
+      }
+
+    } catch (errorForm) {
+      console.error(errorForm)
+      return res.status(500).json({ message: "Internal Server Error" })
+    }
+  } catch (error) {
+    console.error(error)
+    return res.status(500).json({ message: "Internal Server Error" })
+  }
+
+}
