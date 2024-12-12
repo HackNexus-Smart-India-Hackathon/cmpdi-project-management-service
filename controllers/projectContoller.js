@@ -6,9 +6,10 @@ import {
   sendRegistrationLink,
 } from "../utils/emailSender.js";
 import argon2 from "argon2";
-import { v4 as uuidv4 } from "uuid";
+import { stringify, v4 as uuidv4 } from "uuid";
 import axios from "axios";
-import { Op } from "sequelize";
+import { json, Op } from "sequelize";
+import Deadline from "../models/Deadline.js";
 
 async function encryptPassword(password) {
   try {
@@ -114,11 +115,11 @@ export const createProject = async (req, res) => {
           } else {
             const registrationLink = `https://your-portal.com/register?ref=${uuidv4()}`;
             await sendRegistrationLink(email, registrationLink);
-            const hashedPassword = encryptPassword("123456");
+            const hashedPassword = await encryptPassword("123456");
             user = await User.create(
               {
                 email,
-                username: email,
+                username: email, //? to add name
                 password_hash: hashedPassword,
                 role: "investigator",
               },
@@ -129,7 +130,7 @@ export const createProject = async (req, res) => {
           projectInvestigators.forEach((email) => {
             const username = email.split("@")[0];
             axios
-              .post("http://localhost:8000/createUser", {
+              .post(`${process.env.CHAT_ROUTE}/createUser`, {
                 username,
                 email,
                 role: "INVESTIGATOR",
@@ -143,45 +144,44 @@ export const createProject = async (req, res) => {
                 console.error(error);
               });
           });
-          axios
-            .post("http://localhost:8000/createUser", {
-              username: adminName,
+        }
+        axios
+            .post(`${process.env.CHAT_ROUTE}/addAdmin`, {
               email: adminEmail1,
+              username: adminUser.username,
               role: "ADMIN",
               projectId: String(project.id),
             })
             .then((created) => {
-              if (created == "User created successfully")
                 console.log("Chat created");
             })
             .catch((error) => {
               console.error(error);
             });
-        }
-          for (let i = 0; i < projectInvestigators.length; i++) {
-            let investigator = projectInvestigators[i];
-            for (let j = 0; j < projectInvestigators.length; j++) {
-              if (j != i) {
-                const username = investigator.split("@")[0];
-                axios
-                  .post("http://localhost:8000/privateChat", {
-                    username: username,
-                    email: investigator,
-                    role: "INVESTIGATOR",
-                    projectId: String(project.id),
-                    to: investigator[j],
-                  })
-                  .then((created) => {
-                    if (created == "private chat established")
-                      console.log("Chat created");
-                    console.log(created);
-                  })
-                  .catch((err) => {
-                    console.log(err);
-                  });
-              }
+        for (let i = 0; i < projectInvestigators.length; i++) {
+          let investigator = projectInvestigators[i];
+          for (let j = 0; j < projectInvestigators.length; j++) {
+            if (j != i) {
+              const username = investigator.split("@")[0];
+              axios
+                .post(`${process.env.CHAT_ROUTE}/privateChat`, {
+                  name: username,
+                  email: investigator,
+                  role: "INVESTIGATOR",
+                  projectId: String(project.id),
+                  to: investigator[j],
+                })
+                .then((created) => {
+                  if (created == "private chat established")
+                    console.log("Chat created");
+                  console.log(created);
+                })
+                .catch((err) => {
+                  console.log(err);
+                });
             }
           }
+        }
       }
 
       await project.save({ transaction });
@@ -299,3 +299,174 @@ export const getInvestigatorsByProjectId = async (req, res) => {
     });
   }
 };
+
+export const getProjectsByInvestigatorEmail = async (req, res) => {
+  const { email } = req.query;
+
+  if (!email) {
+    return res.status(400).json({
+      success: false,
+      message: "'email' is required to fetch the projects.",
+    });
+  }
+
+  try {
+    const projects = await Project.findAll({
+      where: {
+        projectInvestigatorEmail: {
+          [Op.contains]: [email],
+        },
+      },
+    });
+
+    if (projects.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: `No projects found for investigator email: ${email}`,
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: projects,
+    });
+  } catch (error) {
+    console.error(
+      "Error fetching projects by investigator email:",
+      error.message
+    );
+    return res.status(500).json({
+      success: false,
+      message: "An error occurred while fetching the projects",
+      error: error.message,
+    });
+  }
+};
+export const getProjectById = async (req, res) => {
+  try {
+    const { projectId } = req.params;
+
+    if (!projectId) {
+      return res.status(400).json({
+        success: false,
+        message: "Project ID is required",
+      });
+    }
+
+    const project = await Project.findByPk(projectId);
+
+    if (!project) {
+      return res.status(404).json({
+        success: false,
+        message: "Project not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Project retrieved successfully",
+      project,
+    });
+  } catch (error) {
+    console.error("Error in getProjectById:", error.message);
+    res.status(500).json({
+      success: false,
+      message: "An error occurred while retrieving the project",
+      details: error.message,
+    });
+  }
+};
+
+export const addMilestones = async (req, res) => {
+  try {
+    const { projectId } = req.params;
+    const { milestones } = req.body;
+
+    // Validate required fields
+    if (!milestones || !projectId) {
+      return res.status(400).json({
+        message: "Missing some fields",
+      });
+    }
+    const project = await Project.findByPk(projectId)
+    if (!project) {
+      return res.status(404).json({
+        msg: "Project not found",
+      });
+    }
+    // Start transaction
+    const transaction = await Deadline.sequelize.transaction();
+
+    try {
+      if (Array.isArray(milestones)) {
+        for (const milestone of milestones) {
+          // Create each milestone within the transaction
+          await Deadline.create(
+            {
+              startDate : milestone.startDate,
+              description: milestone.description,
+              deadline: milestone.deadline,
+              investigators_email: project.projectInvestigatorEmail,
+              projectId,
+            },
+            { transaction }
+          );
+        }
+      }
+
+      await transaction.commit();
+
+      res.status(201).json({
+        message: "Milestones added successfully",
+      });
+    } catch (error) {
+
+      await transaction.rollback();
+      console.error("Transaction error:", error);
+      res.status(500).json({
+        message: "Failed to add milestones",
+        error: error.message,
+      });
+    }
+  } catch (error) {
+    console.error("Error:", error);
+    res.status(500).json({
+      message: "An internal server error occurred",
+      error: error.message,
+    });
+  }
+};
+
+export const getMilestones = async (req, res)=>{
+  try {
+    const { projectId } = req.params;
+
+    // Validate required fields
+    if (!projectId) {
+      return res.status(400).json({
+        message: "Missing some fields",
+      });
+    }
+    const project = await Project.findByPk(projectId)
+    if (!project) {
+      return res.status(404).json({
+        msg: "Project not found",
+      });
+    }
+    const getNotification  = await Deadline.findAll({
+      where : {
+        projectId
+      }
+    })
+    if (!getNotification) {
+      return res.status(400).json({err : "no milestones set"})
+    }
+    return res.status(400).json({notification : getNotification})
+  } catch (error) {
+    console.error("Error:", error);
+    res.status(500).json({
+      message: "An internal server error occurred",
+      error: error.message,
+    });
+  }
+}

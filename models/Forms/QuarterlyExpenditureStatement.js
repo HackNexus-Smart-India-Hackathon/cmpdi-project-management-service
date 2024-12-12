@@ -1,7 +1,6 @@
 import { DataTypes } from "sequelize";
 import { sequelize } from "../../config/db.config.js";
 
-
 const FinancialDetail = sequelize.define("FinancialDetail", {
   category: {
     type: DataTypes.STRING,
@@ -21,7 +20,21 @@ const FinancialDetail = sequelize.define("FinancialDetail", {
       min: 0,
     },
   },
-  fundsAdvanced: {
+  previousYear: {
+    type: DataTypes.FLOAT,
+    allowNull: true,
+    validate: {
+      min: 0,
+    },
+  },
+  previousQuarter: {
+    type: DataTypes.FLOAT,
+    allowNull: true,
+    validate: {
+      min: 0,
+    },
+  },
+  currentQuarter: {
     type: DataTypes.FLOAT,
     allowNull: true,
     validate: {
@@ -52,27 +65,7 @@ const QuarterlyExpenditureStatement = sequelize.define(
       type: DataTypes.DATE,
       allowNull: false,
     },
-    previousYear: {
-      type: DataTypes.FLOAT,
-      allowNull: true,
-      validate: {
-        min: 0,
-      },
-    },
-    previousQuarter: {
-      type: DataTypes.FLOAT,
-      allowNull: true,
-      validate: {
-        min: 0,
-      },
-    },
-    currentQuarter: {
-      type: DataTypes.FLOAT,
-      allowNull: true,
-      validate: {
-        min: 0,
-      },
-    },
+
     expenditureToDate: {
       type: DataTypes.FLOAT,
       allowNull: false,
@@ -87,11 +80,19 @@ const QuarterlyExpenditureStatement = sequelize.define(
         min: 0,
       },
     },
+    fundsAdvanced: {
+      type: DataTypes.FLOAT,
+      allowNull: false,
+      validate: {
+        min: 0,
+      },
+    },
   },
   {
     timestamps: true,
   }
 );
+
 
 QuarterlyExpenditureStatement.hasMany(FinancialDetail, {
   foreignKey: "statementId",

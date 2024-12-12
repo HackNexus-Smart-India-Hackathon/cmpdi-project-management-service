@@ -21,6 +21,8 @@ import {
   createRevisionCost,
   getRevisionCostByProjectId,
   getRevisionCostById,
+  formStatus,
+  updateForm,
 } from "../controllers/formController.js";
 
 const router = express.Router();
@@ -86,5 +88,7 @@ router.get("/quarterly-status-report/form/:formId", getQuarterlyStatusReportById
 router.post("/revision-cost-report", createRevisionCost);
 router.get("/revision-cost-report/project/:projectId", getRevisionCostByProjectId);
 router.get("/revision-cost-report/form/:formId", getRevisionCostById);
+router.put('/approved/form'  ,  formStatus)
+router.put('/update/forms' , updateForm)
 
 export default router;
